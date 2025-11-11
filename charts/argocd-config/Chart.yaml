@@ -1,0 +1,7 @@
+apiVersion: v2
+name: argocd-config
+description: ArgoCD Gateway API routes and configuration
+version: 0.1.0
+appVersion: "1.0.0"
+
+# No dependencies - this chart only contains raw manifests

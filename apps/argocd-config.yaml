@@ -1,15 +1,19 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: platform-root-app
+  name: argocd-config
   namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
 spec:
   project: default
 
   source:
     repoURL: https://gitlab.home.rottlr.de/idp/platform/argocd-platform.git
     targetRevision: main
-    path: apps
+    path: charts/argocd-config
+    helm:
+      releaseName: argocd-config
 
   destination:
     server: https://kubernetes.default.svc
@@ -17,13 +21,7 @@ spec:
 
   syncPolicy:
     automated:
-      prune: true # Delete resources when removed from Git
-      selfHeal: true # Automatically sync if cluster state drifts
+      prune: true
+      selfHeal: true
     syncOptions:
       - CreateNamespace=true
-    retry:
-      limit: 5
-      backoff:
-        duration: 5s
-        factor: 2
-        maxDuration: 3m

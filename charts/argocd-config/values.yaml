@@ -1,0 +1,11 @@
+# Gateway API configuration
+gateway:
+  name: external
+  namespace: gateway
+
+# ArgoCD configuration
+argocd:
+  hostname: argocd.k8s.home.rottlr.de
+  serviceName: argocd-server
+  servicePort: 80
+  namespace: argocd

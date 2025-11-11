@@ -4,6 +4,13 @@ redis-ha:
 controller:
   replicas: 1
 
+configs:
+  params:
+    # Allow insecure connections since TLS is terminated at the Gateway
+    server.insecure: true
+  cm:
+    url: https://argocd.k8s.home.rottlr.de
+
 server:
   autoscaling:
     enabled: true
