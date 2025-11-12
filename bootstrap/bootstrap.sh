@@ -3,6 +3,7 @@
 echo "Installing ArgoCD..."
 helm repo add argo https://argoproj.github.io/argo-helm
 helm upgrade --install argocd argo/argo-cd --version 9.1.0 -n argocd --create-namespace -f bootstrap/argocd-values.yaml
+kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=argocd-server -n argocd --timeout=300s
 echo ""
 
 echo "Applying bootstrap configuration"
