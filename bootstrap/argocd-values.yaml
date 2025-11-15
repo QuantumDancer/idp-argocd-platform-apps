@@ -15,11 +15,23 @@ server:
   autoscaling:
     enabled: true
     minReplicas: 2
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "512Mi"
 
 repoServer:
   autoscaling:
     enabled: true
     minReplicas: 2
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "512Mi"
 
 applicationSet:
   replicas: 2
