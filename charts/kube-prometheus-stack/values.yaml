@@ -1,0 +1,61 @@
+kube-prometheus-stack:
+  prometheus:
+    prometheusSpec:
+      resources:
+        requests:
+          memory: "1Gi"
+          cpu: "500m"
+        limits:
+          memory: "2Gi"
+      retention: 7d
+      storageSpec:
+        volumeClaimTemplate:
+          spec:
+            accessModes: ["ReadWriteOnce"]
+            resources:
+              requests:
+                storage: 20Gi
+
+  grafana:
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "100m"
+      limits:
+        memory: "512Mi"
+    admin:
+      existingSecret: "{{ .Release.Name }}-grafana-admin"
+      userKey: admin-user
+      passwordKey: admin-password
+    persistence:
+      enabled: true
+      size: 10Gi
+
+  alertmanager:
+    alertmanagerSpec:
+      resources:
+        requests:
+          memory: "128Mi"
+          cpu: "50m"
+        limits:
+          memory: "256Mi"
+      retention: 168h # retention should match '^(0|(([0-9]+)h)?(([0-9]+)m)?(([0-9]+)s)?(([0-9]+)ms)?)$'
+
+  # Disable components that are not reachable by default in Talos Linux
+  kubeControllerManager:
+    enabled: false
+  kubeEtcd:
+    enabled: false
+  kubeProxy:
+    enabled: false
+  kubeScheduler:
+    enabled: false
+
+# Custom Gateway Configuration, since kube-prometheus-stack Helm chart does not support Gateway routes yet
+gateway:
+  name: external
+  namespace: gateway
+  hostnames:
+    grafana: grafana.k8s.home.rottlr.de
+    prometheus: prometheus.k8s.home.rottlr.de
+    alertmanager: alertmanager.k8s.home.rottlr.de
