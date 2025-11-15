@@ -99,3 +99,8 @@ loki:
     replicas: 0
   bloomGateway:
     replicas: 0
+
+loki-mixin:
+  grafanaDashboard:
+    enabled: true
+    folder: "Observability - Loki"
