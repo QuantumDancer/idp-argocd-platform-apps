@@ -1,0 +1,112 @@
+# Grafana Alloy unified telemetry collector
+# Documentation: https://grafana.com/docs/alloy/latest/
+
+alloy:
+  alloy:
+    # Alloy configuration in HCL format
+    configMap:
+      content: |
+        // ========================================
+        // Kubernetes Pod Discovery
+        // ========================================
+        // Discover all pods on the same node as this Alloy instance
+        discovery.kubernetes "pods" {
+          role = "pod"
+          selectors {
+            role = "pod"
+            field = "spec.nodeName=" + env("HOSTNAME")
+          }
+        }
+
+        // ========================================
+        // Logs Collection → Loki
+        // ========================================
+        // Collect logs from all discovered pods
+        loki.source.kubernetes "pods" {
+          targets    = discovery.kubernetes.pods.targets
+          forward_to = [loki.write.default.receiver]
+        }
+
+        // Write logs to Loki
+        loki.write "default" {
+          endpoint {
+            url = "http://loki-gateway.monitoring.svc.cluster.local/loki/api/v1/push"
+            tenant_id = "1"
+          }
+        }
+
+        // ========================================
+        // Future: Traces Collection → Tempo
+        // ========================================
+        // Uncomment when Tempo is deployed
+        //
+        // // Receive OTLP traces via gRPC and HTTP
+        // otelcol.receiver.otlp "default" {
+        //   grpc {
+        //     endpoint = "0.0.0.0:4317"
+        //   }
+        //   http {
+        //     endpoint = "0.0.0.0:4318"
+        //   }
+        //
+        //   output {
+        //     traces  = [otelcol.exporter.otlp.tempo.input]
+        //   }
+        // }
+        //
+        // // Export traces to Tempo
+        // otelcol.exporter.otlp "tempo" {
+        //   client {
+        //     endpoint = "http://tempo-gateway.monitoring.svc.cluster.local:4317"
+        //     tls {
+        //       insecure = true
+        //     }
+        //   }
+        // }
+
+        // ========================================
+        // Future: Metrics Collection → Prometheus
+        // ========================================
+        // Uncomment to collect metrics from pods
+        //
+        // // Scrape metrics from discovered pods
+        // prometheus.scrape "pods" {
+        //   targets    = discovery.kubernetes.pods.targets
+        //   forward_to = [prometheus.remote_write.default.receiver]
+        // }
+        //
+        // // Send metrics to Prometheus
+        // prometheus.remote_write "default" {
+        //   endpoint {
+        //     url = "http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090/api/v1/write"
+        //   }
+        // }
+
+  # Deploy as DaemonSet (one pod per node)
+  controller:
+    type: "daemonset"
+
+  # Service account with RBAC for Kubernetes discovery
+  serviceAccount:
+    create: true
+
+  # Resource limits for light usage
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "50m"
+    limits:
+      memory: "256Mi"
+      cpu: "200m"
+
+  # Future: Expose ports for OTLP when Tempo is added
+  # service:
+  #   ports:
+  #     - name: otlp-grpc
+  #       port: 4317
+  #       targetPort: 4317
+  #       protocol: TCP
+  #     - name: otlp-http
+  #       port: 4318
+  #       targetPort: 4318
+  #       protocol: TCP
