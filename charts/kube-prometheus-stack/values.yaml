@@ -16,6 +16,13 @@ kube-prometheus-stack:
               requests:
                 storage: 20Gi
 
+  nodeExporter:
+    operatingSystems:
+      aix:
+        enabled: false
+      darwin:
+        enabled: false
+
   grafana:
     resources:
       requests:
