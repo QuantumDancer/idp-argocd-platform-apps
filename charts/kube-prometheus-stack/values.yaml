@@ -31,6 +31,15 @@ kube-prometheus-stack:
       enabled: true
       size: 10Gi
 
+    additionalDataSources:
+      - name: Loki
+        type: loki
+        access: proxy
+        url: http://loki-loki-gateway.monitoring.svc.cluster.local
+        isDefault: false
+        jsonData:
+          maxLines: 1000
+
   alertmanager:
     alertmanagerSpec:
       resources:
