@@ -24,6 +24,8 @@ kube-prometheus-stack:
         enabled: false
 
   grafana:
+    operator:
+      folder: kube-prometheus-stack
     resources:
       requests:
         memory: "256Mi"
