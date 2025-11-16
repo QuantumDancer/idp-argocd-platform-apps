@@ -8,6 +8,8 @@ kube-prometheus-stack:
         limits:
           memory: "2Gi"
       retention: 7d
+      # Enable remote write receiver for Alloy to send metrics
+      enableRemoteWriteReceiver: true
       storageSpec:
         volumeClaimTemplate:
           spec:
@@ -15,13 +17,6 @@ kube-prometheus-stack:
             resources:
               requests:
                 storage: 20Gi
-
-  nodeExporter:
-    operatingSystems:
-      aix:
-        enabled: false
-      darwin:
-        enabled: false
 
   grafana:
     sidecar:
@@ -75,6 +70,12 @@ kube-prometheus-stack:
   kubeProxy:
     enabled: false
   kubeScheduler:
+    enabled: false
+
+  # Disable exporters (provided by k8s-monitoring)
+  kubeStateMetrics:
+    enabled: false
+  nodeExporter:
     enabled: false
 
 # Custom Gateway Configuration, since kube-prometheus-stack Helm chart does not support Gateway routes yet

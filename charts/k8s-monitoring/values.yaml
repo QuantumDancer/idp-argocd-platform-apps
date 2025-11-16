@@ -1,0 +1,150 @@
+# Grafana K8s Monitoring Chart Configuration
+# This chart uses Grafana Alloy for unified observability (metrics, logs, traces)
+
+# Configure with upstream k8s-monitoring chart values
+k8s-monitoring:
+  cluster:
+    name: home
+
+  # Local destinations (Prometheus and Loki running in the cluster)
+  destinations:
+    - name: local-prometheus
+      type: prometheus
+      url: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090/api/v1/write
+      # No auth required (yet)
+
+    - name: local-loki
+      type: loki
+      url: http://loki-gateway.monitoring.svc.cluster.local/loki/api/v1/push
+      tenantId: "1" # Loki multi-tenant org ID
+      # No auth required (yet)
+
+  # Enable cluster metrics collection
+  clusterMetrics:
+    enabled: true
+    # Disable unnecessary exporters
+    kepler:
+      enabled: false
+      deploy: false
+    opencost:
+      enabled: false
+      deploy: false
+    windows-exporter:
+      enabled: false
+      deploy: false
+
+  # Enable Prometheus Operator Objects (ServiceMonitors, PodMonitors, Probes)
+  prometheusOperatorObjects:
+    enabled: true
+
+  # Enable cluster events collection
+  clusterEvents:
+    enabled: true
+
+  # Enable node logs collection (journald)
+  nodeLogs:
+    enabled: true
+
+  # Enable pod logs collection
+  podLogs:
+    enabled: true
+
+  # Enable application observability (OTLP receivers for traces)
+  # TODO: Enable once Tempo is deployed
+  applicationObservability:
+    enabled: false
+    receivers:
+      otlp:
+        grpc:
+          enabled: true
+          port: 4317
+        http:
+          enabled: true
+          port: 4318
+      zipkin:
+        enabled: true
+        port: 9411
+
+  # Alloy integrations (self-monitoring)
+  integrations:
+    alloy:
+      instances:
+        - name: alloy
+          labelSelectors:
+            app.kubernetes.io/name:
+              - alloy-metrics
+              - alloy-singleton
+              - alloy-logs
+
+  # Alloy instances configuration
+  alloy-metrics:
+    enabled: true
+    alloy:
+      resources:
+        requests:
+          cpu: 100m
+          memory: 512Mi
+        limits:
+          memory: 2Gi
+
+  alloy-singleton:
+    enabled: true
+    alloy:
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          memory: 512Mi
+
+  alloy-logs:
+    enabled: true
+    alloy:
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          memory: 512Mi
+
+  # TODO: Enable once Tempo is deployed
+  alloy-receiver:
+    enabled: false
+    alloy:
+      # Extra ports for OTLP and Zipkin receivers
+      extraPorts:
+        - name: otlp-grpc
+          port: 4317
+          targetPort: 4317
+          protocol: TCP
+        - name: otlp-http
+          port: 4318
+          targetPort: 4318
+          protocol: TCP
+        - name: zipkin
+          port: 9411
+          targetPort: 9411
+          protocol: TCP
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          memory: 512Mi
+
+alloy-mixin:
+  grafanaDashboard:
+    enabled: true
+  additionalAnnotations:
+    grafana-folder: Observability
+  monitor:
+    enabled: true
+
+kubernetes-mixin:
+  annotations:
+    grafana-folder: Kubernetes
+  prometheusRule:
+    rules:
+      enabled: true
+    alerts:
+      enabled: true

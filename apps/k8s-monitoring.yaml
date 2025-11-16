@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: alloy
+  name: k8s-monitoring
   namespace: argocd
   annotations:
     argocd.argoproj.io/sync-wave: "1"
@@ -11,9 +11,9 @@ spec:
   source:
     repoURL: https://gitlab.home.rottlr.de/idp/platform/argocd-platform.git
     targetRevision: main
-    path: charts/alloy
+    path: charts/k8s-monitoring
     helm:
-      releaseName: alloy
+      releaseName: k8s-monitoring
 
   destination:
     server: https://kubernetes.default.svc
@@ -25,3 +25,4 @@ spec:
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
+      - ServerSideApply=true
