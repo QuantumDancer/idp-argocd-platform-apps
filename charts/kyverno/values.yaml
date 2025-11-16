@@ -1,0 +1,25 @@
+# Values for kyverno subchart
+kyverno:
+  admissionController:
+    replicas: 1
+    resources:
+      requests:
+        memory: 128Mi
+
+  backgroundController:
+    replicas: 1
+    resources:
+      requests:
+        memory: 128Mi
+
+  cleanupController:
+    replicas: 1
+    resources:
+      requests:
+        memory: 128Mi
+
+  reportsController:
+    replicas: 1
+    resources:
+      requests:
+        memory: 128Mi

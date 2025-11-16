@@ -1,0 +1,10 @@
+apiVersion: v2
+name: kyverno
+description: Kyverno Policy Engine with custom configuration
+version: 0.1.0
+appVersion: "1.0.0"
+
+dependencies:
+  - name: kyverno
+    version: 3.5.1
+    repository: https://kyverno.github.io/kyverno/
