@@ -24,8 +24,12 @@ kube-prometheus-stack:
         enabled: false
 
   grafana:
-    operator:
-      folder: kube-prometheus-stack
+    sidecar:
+      dashboards:
+        label: grafana-dashboard
+        labelValue: "" # Allow arbitrary label values (required for mixins)
+        defaultFolderName: kube-prometheus-stack
+        folderAnnotation: grafana-folder
     resources:
       requests:
         memory: "256Mi"
