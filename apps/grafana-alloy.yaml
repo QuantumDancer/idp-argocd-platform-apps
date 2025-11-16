@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: grafana-alloy
+  name: alloy
   namespace: argocd
   annotations:
     argocd.argoproj.io/sync-wave: "1"
@@ -11,9 +11,9 @@ spec:
   source:
     repoURL: https://gitlab.home.rottlr.de/idp/platform/argocd-platform.git
     targetRevision: main
-    path: charts/grafana-alloy
+    path: charts/alloy
     helm:
-      releaseName: grafana-alloy
+      releaseName: alloy
 
   destination:
     server: https://kubernetes.default.svc
