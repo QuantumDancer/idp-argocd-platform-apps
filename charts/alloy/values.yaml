@@ -206,3 +206,7 @@ alloy-mixin:
     enabled: true
   additionalAnnotations:
     grafana-folder: Observability
+  monitor:
+    enabled: true
+    additionalLabels:
+      release: kube-prometheus-stack
