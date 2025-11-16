@@ -94,6 +94,26 @@ alloy:
         }
 
         // ========================================
+        // Self-Monitoring: Alloy Metrics → Prometheus
+        // ========================================
+        // Expose Alloy's internal metrics
+        prometheus.exporter.self "alloy" {
+        }
+
+        // Scrape Alloy's own metrics
+        prometheus.scrape "alloy_self" {
+          targets    = prometheus.exporter.self.alloy.targets
+          forward_to = [prometheus.remote_write.metrics.receiver]
+        }
+
+        // Send metrics to Prometheus
+        prometheus.remote_write "metrics" {
+          endpoint {
+            url = "http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090/api/v1/write"
+          }
+        }
+
+        // ========================================
         // Future: Traces Collection → Tempo
         // ========================================
         // Uncomment when Tempo is deployed
@@ -167,3 +187,9 @@ alloy:
   #       port: 4318
   #       targetPort: 4318
   #       protocol: TCP
+
+alloy-mixin:
+  grafanaDashboard:
+    enabled: true
+  additionalAnnotations:
+    grafana-folder: Observability
