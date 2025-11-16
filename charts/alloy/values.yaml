@@ -88,6 +88,13 @@ alloy:
             }
           }
 
+          // Add static cluster label
+          stage.static_labels {
+            values = {
+              cluster = "home",
+            }
+          }
+
           forward_to = [loki.write.default.receiver]
         }
 
