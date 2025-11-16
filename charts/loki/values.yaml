@@ -103,4 +103,5 @@ loki:
 loki-mixin:
   grafanaDashboard:
     enabled: true
-    folder: "Observability - Loki"
+  additionalAnnotations:
+    grafana-folder: Observability

@@ -30,6 +30,8 @@ kube-prometheus-stack:
         labelValue: "" # Allow arbitrary label values (required for mixins)
         defaultFolderName: kube-prometheus-stack
         folderAnnotation: grafana-folder
+        provider:
+          foldersFromFilesStructure: true
     resources:
       requests:
         memory: "256Mi"
