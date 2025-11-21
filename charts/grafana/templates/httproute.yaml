@@ -1,0 +1,28 @@
+# TODO: Replace with configuration by Helm chart once available
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: grafana
+  namespace: {{ .Release.Namespace }}
+spec:
+  hostnames:
+    - grafana.k8s.home.rottlr.de
+
+  parentRefs:
+  - group: gateway.networking.k8s.io
+    kind: Gateway
+    name: external
+    namespace: gateway
+
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /
+    backendRefs:
+    - group: ""
+      kind: Service
+      name: {{ .Release.Name }}-service
+      port: 3000
+      weight: 1
+

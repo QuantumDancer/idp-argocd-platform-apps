@@ -1,28 +1,28 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: loki
+  name: grafana-database
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "0"
+    argocd.argoproj.io/sync-wave: "2" # requires cloudnative-pg
 spec:
   project: default
 
   source:
     repoURL: https://gitlab.home.rottlr.de/idp/platform/argocd-platform.git
     targetRevision: main
-    path: charts/loki
+    path: charts/grafana-database
     helm:
-      releaseName: loki
+      releaseName: grafana-database
 
   destination:
     server: https://kubernetes.default.svc
-    namespace: loki
+    namespace: grafana-database
 
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
     syncOptions:
-      - CreateNamespace=true
       - ServerSideApply=true
+      - CreateNamespace=true

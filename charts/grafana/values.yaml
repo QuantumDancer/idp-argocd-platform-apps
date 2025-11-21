@@ -1,0 +1,5 @@
+grafana-operator:
+  dashboard:
+    enabled: true
+  serviceMonitor:
+    enabled: true

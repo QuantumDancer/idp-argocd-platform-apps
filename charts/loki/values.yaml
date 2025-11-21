@@ -103,8 +103,9 @@ loki:
 loki-mixin:
   grafanaDashboard:
     enabled: true
-  additionalAnnotations:
-    grafana-folder: Observability
+    folder: Observability
+    grafanaOperator:
+      enabled: true
   monitor:
     enabled: true
     additionalLabels:

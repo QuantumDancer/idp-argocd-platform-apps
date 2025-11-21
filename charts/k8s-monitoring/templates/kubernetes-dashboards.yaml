@@ -1,0 +1,19 @@
+{{- $values := index .Values "kubernetes-mixin" }}
+{{- if $values.grafanaDashboards.enabled }}
+{{- range $values.grafanaDashboards.dashboards }}
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: kubernetes-{{ . }}
+spec:
+  allowCrossNamespaceImport: true
+  configMapRef:
+    name: dashboard-kubernetes-mixin-{{ . }}
+    key: {{ . }}.json
+  folder: {{ $values.grafanaDashboards.folder | quote }}
+  instanceSelector:
+    matchLabels:
+      {{- toYaml $values.grafanaDashboards.instanceSelector.matchLabels | nindent 6 }}
+{{- end }}
+{{- end }}

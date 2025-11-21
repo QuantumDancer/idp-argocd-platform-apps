@@ -1,0 +1,74 @@
+# https://grafana.github.io/grafana-operator/docs/examples/grafana/custom-images/readme/
+# https://grafana.github.io/grafana-operator/docs/examples/grafana/multiple_replicas/readme/
+# https://grafana.github.io/grafana-operator/docs/examples/grafana/credential_secret/readme/
+apiVersion: grafana.integreatly.org/v1beta1
+kind: Grafana
+metadata:
+  name: grafana
+  labels:
+    # This label enables automatic dashboard discovery
+    # Any GrafanaDashboard CR with instanceSelector.matchLabels.dashboards: "grafana" will be loaded
+    # GrafanaDashboards can contain inline JSON/Jsonnet or reference ConfigMaps via configMapRef
+    dashboards: "grafana"
+spec:
+  version: 12.3.0
+  config:
+    log:
+      mode: "console"
+    database:
+      type: "postgres"
+      host: "grafana-database-cluster-rw.grafana-database.svc.cluster.local"
+      name: "grafana"
+      user: "$__env{GF_DATABASE_USERNAME}"
+      password: "$__env{GF_DATABASE_PASSWORD}"
+    # unified_alerting:
+    #   enabled: true
+    #   ha_listen_address: "${POD_IP}:9094"
+    #   ha_peers: "grafana-alerting:9094"
+    #   ha_advertise_address: "${POD_IP}:9094"
+    #   ha_peer_timeout: 15s
+    #   ha_reconnect_timeout: 2m
+  disableDefaultAdminSecret: true
+  deployment:
+    spec:
+      replicas: 2
+      template:
+        spec:
+          containers:
+            - name: grafana
+              env:
+                - name: GF_SECURITY_ADMIN_USER
+                  valueFrom:
+                    secretKeyRef:
+                      key: admin-user
+                      name: grafana-admin-credentials
+                - name: GF_SECURITY_ADMIN_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      key: admin-password
+                      name: grafana-admin-credentials
+                - name: GF_DATABASE_USERNAME
+                  valueFrom:
+                    secretKeyRef:
+                      key: username
+                      name: grafana-database-credentials
+                - name: GF_DATABASE_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      key: password
+                      name: grafana-database-credentials
+              resources:
+                limits:
+                  memory: 512Mi
+                requests:
+                  cpu: 100m
+                  memory: 256Mi
+  # TODO: Not yet released, wait until next Helm chart version
+  # https://grafana.github.io/grafana-operator/docs/examples/grafana/httproute/readme/
+  # httpRoute:
+  #   spec:
+  #     parentRefs:
+  #       - name: external
+  #         namespace: gateway
+  #     hostnames:
+  #       - grafana.k8s.home.rottlr.de

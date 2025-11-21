@@ -1,6 +1,33 @@
 kube-prometheus-stack:
   prometheus:
     prometheusSpec:
+      # Configure Prometheus to ignore all ServiceMonitors/PodMonitors
+      # Alloy will discover and scrape them instead via prometheusOperatorObjects
+      # Using matchLabels with a label that will never exist ensures no objects are selected
+      serviceMonitorSelector:
+        matchLabels:
+          non-existent-label: "never-matches"
+      podMonitorSelector:
+        matchLabels:
+          non-existent-label: "never-matches"
+      probeSelector:
+        matchLabels:
+          non-existent-label: "never-matches"
+      scrapeConfigSelector:
+        matchLabels:
+          non-existent-label: "never-matches"
+      serviceMonitorNamespaceSelector:
+        matchLabels:
+          non-existent-label: "never-matches"
+      podMonitorNamespaceSelector:
+        matchLabels:
+          non-existent-label: "never-matches"
+      probeNamespaceSelector:
+        matchLabels:
+          non-existent-label: "never-matches"
+      scrapeConfigNamespaceSelector:
+        matchLabels:
+          non-existent-label: "never-matches"
       resources:
         requests:
           memory: "1Gi"
@@ -18,40 +45,6 @@ kube-prometheus-stack:
               requests:
                 storage: 20Gi
 
-  grafana:
-    sidecar:
-      dashboards:
-        label: grafana-dashboard
-        labelValue: "" # Allow arbitrary label values (required for mixins)
-        defaultFolderName: kube-prometheus-stack
-        folderAnnotation: grafana-folder
-        provider:
-          foldersFromFilesStructure: true
-    resources:
-      requests:
-        memory: "256Mi"
-        cpu: "100m"
-      limits:
-        memory: "512Mi"
-    admin:
-      existingSecret: "{{ .Release.Name }}-grafana-admin"
-      userKey: admin-user
-      passwordKey: admin-password
-    persistence:
-      enabled: true
-      size: 10Gi
-
-    additionalDataSources:
-      - name: Loki
-        type: loki
-        access: proxy
-        url: http://loki-gateway.monitoring.svc.cluster.local
-        jsonData:
-          maxLines: 1000
-          httpHeaderName1: "X-Scope-OrgID"
-        secureJsonData:
-          httpHeaderValue1: "1"
-
   alertmanager:
     alertmanagerSpec:
       resources:
@@ -61,6 +54,10 @@ kube-prometheus-stack:
         limits:
           memory: "256Mi"
       retention: 168h # retention should match '^(0|(([0-9]+)h)?(([0-9]+)m)?(([0-9]+)s)?(([0-9]+)ms)?)$'
+
+  # Disable Grafana because it is deployed via GrafanaOperator in  ../grafana/
+  grafana:
+    enabled: false
 
   # Disable components that are not reachable by default in Talos Linux
   kubeControllerManager:
@@ -78,11 +75,21 @@ kube-prometheus-stack:
   nodeExporter:
     enabled: false
 
+  # Disable rules that we don't need
+  defaultRules:
+    rules:
+      etcd: false
+      kubeControllerManager: false
+      kubeProxy: false
+      kubeScheduler: false
+      kubeStateMetrics: false
+      nodeExporterAlerting: false
+      nodeExporterRecording: false
+
 # Custom Gateway Configuration, since kube-prometheus-stack Helm chart does not support Gateway routes yet
 gateway:
   name: external
   namespace: gateway
   hostnames:
-    grafana: grafana.k8s.home.rottlr.de
     prometheus: prometheus.k8s.home.rottlr.de
     alertmanager: alertmanager.k8s.home.rottlr.de

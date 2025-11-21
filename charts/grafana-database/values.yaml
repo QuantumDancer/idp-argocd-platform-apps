@@ -1,0 +1,20 @@
+cluster:
+  type: postgresql
+  mode: standalone
+  version:
+    postgresql: "16"
+  cluster:
+    instances: 3
+    storage:
+      size: 4Gi
+    monitoring:
+      enabled: true
+      podMonitor:
+        enabled: true
+    initdb:
+      database: grafana
+      owner: grafana
+      secret:
+        name: grafana-database-credentials
+  backups:
+    enabled: false

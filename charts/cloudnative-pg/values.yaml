@@ -3,7 +3,3 @@ cloudnative-pg:
     podMonitorEnabled: true
     grafanaDashboard:
       create: true
-      labels:
-        grafana-dashboard: cnpg
-      annotations:
-        grafana-folder: Databases

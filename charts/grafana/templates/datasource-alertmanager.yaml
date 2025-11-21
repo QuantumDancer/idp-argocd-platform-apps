@@ -1,0 +1,17 @@
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDatasource
+metadata:
+  name: alertmanager
+spec:
+  instanceSelector:
+    matchLabels:
+      dashboards: "grafana"
+  datasource:
+    name: Alertmanager
+    type: alertmanager
+    access: proxy
+    url: http://kube-prometheus-stack-alertmanager.kube-prometheus-stack.svc.cluster.local
+    jsonData:
+      'tlsSkipVerify': true
+      'handleGrafanaManagedAlerts': true
+      'implementation': 'prometheus'

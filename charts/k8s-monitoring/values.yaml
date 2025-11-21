@@ -10,12 +10,12 @@ k8s-monitoring:
   destinations:
     - name: local-prometheus
       type: prometheus
-      url: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090/api/v1/write
+      url: http://kube-prometheus-stack-prometheus.kube-prometheus-stack.svc.cluster.local:9090/api/v1/write
       # No auth required (yet)
 
     - name: local-loki
       type: loki
-      url: http://loki-gateway.monitoring.svc.cluster.local/loki/api/v1/push
+      url: http://loki-gateway.loki.svc.cluster.local/loki/api/v1/push
       tenantId: "1" # Loki multi-tenant org ID
       # No auth required (yet)
 
@@ -135,8 +135,9 @@ k8s-monitoring:
 alloy-mixin:
   grafanaDashboard:
     enabled: true
-  additionalAnnotations:
-    grafana-folder: Observability
+    folder: Observability
+    grafanaOperator:
+      enabled: true
   monitor:
     enabled: true
 
@@ -148,3 +149,31 @@ kubernetes-mixin:
       enabled: true
     alerts:
       enabled: true
+  # Custom variables for ./templates/kubernetes-dashboards.yaml because the
+  # kubernetes-mixin Helm chart does not provide GrafanaDashboard CRs,
+  # so we need to generate these on our own.
+  grafanaDashboards:
+    enabled: true
+    folder: Kubernetes
+    instanceSelector:
+      matchLabels:
+        dashboards: "grafana"
+    dashboards:
+      - apiserver
+      - cluster-total
+      - controller-manager
+      - k8s-resources-cluster
+      - k8s-resources-namespace
+      - k8s-resources-node
+      - k8s-resources-pod
+      - k8s-resources-workload
+      - k8s-resources-workloads-namespace
+      - kubelet
+      - namespace-by-pod
+      - namespace-by-workload
+      - persistentvolumesusage
+      - pod-total
+      - proxy
+      - scheduler
+      - statefulset
+      - workload-total
