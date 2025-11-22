@@ -75,16 +75,9 @@ kube-prometheus-stack:
   nodeExporter:
     enabled: false
 
-  # Disable rules that we don't need
+  # Disable default rules. Rules and alerts are provided by the mixins (see ../../mixins/README.md)
   defaultRules:
-    rules:
-      etcd: false
-      kubeControllerManager: false
-      kubeProxy: false
-      kubeScheduler: false
-      kubeStateMetrics: false
-      nodeExporterAlerting: false
-      nodeExporterRecording: false
+    create: false
 
 # Custom Gateway Configuration, since kube-prometheus-stack Helm chart does not support Gateway routes yet
 gateway:

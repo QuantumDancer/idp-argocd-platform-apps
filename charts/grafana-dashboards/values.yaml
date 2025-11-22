@@ -19,8 +19,7 @@ prometheus:
   # Labels to apply to PrometheusRule CRs
   # The Prometheus Operator uses ruleSelector to select which rules to load
   ruleLabels:
-    prometheus: kube-prometheus-stack
-    role: alert-rules
+    release: kube-prometheus-stack
 
 # Dashboard configuration
 dashboards:
