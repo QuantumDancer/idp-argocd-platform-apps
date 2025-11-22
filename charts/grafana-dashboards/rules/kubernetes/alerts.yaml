@@ -553,9 +553,9 @@ groups:
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeclienterrors
             summary: Kubernetes API server client is experiencing errors.
           expr: |
-            (sum(rate(rest_client_requests_total{job="integrations/kubernetes/kube-apiserver",code=~"5.."}[5m])) by (cluster, instance, job, namespace)
+            (sum(rate(rest_client_requests_total{job="apiserver",code=~"5.."}[5m])) by (cluster, instance, job, namespace)
               /
-            sum(rate(rest_client_requests_total{job="integrations/kubernetes/kube-apiserver"}[5m])) by (cluster, instance, job, namespace))
+            sum(rate(rest_client_requests_total{job="apiserver"}[5m])) by (cluster, instance, job, namespace))
             > 0.01
           for: 15m
           labels:
@@ -626,9 +626,9 @@ groups:
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeclientcertificateexpiration
             summary: Client certificate is about to expire.
           expr: |
-            histogram_quantile(0.01, sum without (namespace, service, endpoint) (rate(apiserver_client_certificate_expiration_seconds_bucket{job="integrations/kubernetes/kube-apiserver"}[5m]))) < 604800
+            histogram_quantile(0.01, sum without (namespace, service, endpoint) (rate(apiserver_client_certificate_expiration_seconds_bucket{job="apiserver"}[5m]))) < 604800
             and
-            on(job, cluster, instance) apiserver_client_certificate_expiration_seconds_count{job="integrations/kubernetes/kube-apiserver"} > 0
+            on(job, cluster, instance) apiserver_client_certificate_expiration_seconds_count{job="apiserver"} > 0
           for: 5m
           labels:
             severity: warning
@@ -638,9 +638,9 @@ groups:
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeclientcertificateexpiration
             summary: Client certificate is about to expire.
           expr: |
-            histogram_quantile(0.01, sum without (namespace, service, endpoint) (rate(apiserver_client_certificate_expiration_seconds_bucket{job="integrations/kubernetes/kube-apiserver"}[5m]))) < 86400
+            histogram_quantile(0.01, sum without (namespace, service, endpoint) (rate(apiserver_client_certificate_expiration_seconds_bucket{job="apiserver"}[5m]))) < 86400
             and
-            on(job, cluster, instance) apiserver_client_certificate_expiration_seconds_count{job="integrations/kubernetes/kube-apiserver"} > 0
+            on(job, cluster, instance) apiserver_client_certificate_expiration_seconds_count{job="apiserver"} > 0
           for: 5m
           labels:
             severity: critical
@@ -650,7 +650,7 @@ groups:
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeaggregatedapierrors
             summary: Kubernetes aggregated API has reported errors.
           expr: |
-            sum by(cluster, instance, name, reason)(increase(aggregator_unavailable_apiservice_total{job="integrations/kubernetes/kube-apiserver"}[1m])) > 0
+            sum by(cluster, instance, name, reason)(increase(aggregator_unavailable_apiservice_total{job="apiserver"}[1m])) > 0
           for: 10m
           labels:
             severity: warning
@@ -660,7 +660,7 @@ groups:
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeaggregatedapidown
             summary: Kubernetes aggregated API is down.
           expr: |
-            (1 - max by(name, namespace, cluster)(avg_over_time(aggregator_unavailable_apiservice{job="integrations/kubernetes/kube-apiserver"}[10m]))) * 100 < 85
+            (1 - max by(name, namespace, cluster)(avg_over_time(aggregator_unavailable_apiservice{job="apiserver"}[10m]))) * 100 < 85
           for: 5m
           labels:
             severity: warning
@@ -670,7 +670,7 @@ groups:
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeapidown
             summary: Target disappeared from Prometheus target discovery.
           expr: |
-            absent(up{job="integrations/kubernetes/kube-apiserver"})
+            absent(up{job="apiserver"})
           for: 15m
           labels:
             severity: critical
@@ -680,7 +680,7 @@ groups:
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeapiterminatedrequests
             summary: The kubernetes apiserver has terminated {{ $value | humanizePercentage }} of its incoming requests.
           expr: |
-            sum by(cluster) (rate(apiserver_request_terminations_total{job="integrations/kubernetes/kube-apiserver"}[10m])) / ( sum by(cluster) (rate(apiserver_request_total{job="integrations/kubernetes/kube-apiserver"}[10m])) + sum by(cluster) (rate(apiserver_request_terminations_total{job="integrations/kubernetes/kube-apiserver"}[10m])) ) > 0.20
+            sum by(cluster) (rate(apiserver_request_terminations_total{job="apiserver"}[10m])) / ( sum by(cluster) (rate(apiserver_request_total{job="apiserver"}[10m])) + sum by(cluster) (rate(apiserver_request_terminations_total{job="apiserver"}[10m])) ) > 0.20
           for: 5m
           labels:
             severity: warning
@@ -863,42 +863,6 @@ groups:
             summary: Target disappeared from Prometheus target discovery.
           expr: |
             absent(up{job="integrations/kubernetes/kubelet"})
-          for: 15m
-          labels:
-            severity: critical
-    - name: kubernetes-system-scheduler
-      rules:
-        - alert: KubeSchedulerDown
-          annotations:
-            description: KubeScheduler has disappeared from Prometheus target discovery.
-            runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeschedulerdown
-            summary: Target disappeared from Prometheus target discovery.
-          expr: |
-            absent(up{job="integrations/kubernetes/kube-scheduler"})
-          for: 15m
-          labels:
-            severity: critical
-    - name: kubernetes-system-controller-manager
-      rules:
-        - alert: KubeControllerManagerDown
-          annotations:
-            description: KubeControllerManager has disappeared from Prometheus target discovery.
-            runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubecontrollermanagerdown
-            summary: Target disappeared from Prometheus target discovery.
-          expr: |
-            absent(up{job="integrations/kubernetes/kube-controller-manager"})
-          for: 15m
-          labels:
-            severity: critical
-    - name: kubernetes-system-kube-proxy
-      rules:
-        - alert: KubeProxyDown
-          annotations:
-            description: KubeProxy has disappeared from Prometheus target discovery.
-            runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeproxydown
-            summary: Target disappeared from Prometheus target discovery.
-          expr: |
-            absent(up{job="kube-proxy"})
           for: 15m
           labels:
             severity: critical
