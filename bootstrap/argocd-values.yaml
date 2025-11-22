@@ -3,6 +3,22 @@ redis-ha:
 
 controller:
   replicas: 1
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      namespace: argocd
+      additionalLabels:
+        release: kube-prometheus-stack
+      relabelings:
+        # Set job label for Alloy integration pattern
+        - sourceLabels: [__address__]
+          targetLabel: job
+          replacement: "integrations/argocd"
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
 
 configs:
   params:
@@ -21,6 +37,22 @@ server:
       cpu: "100m"
     limits:
       memory: "512Mi"
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      namespace: argocd
+      additionalLabels:
+        release: kube-prometheus-stack
+      relabelings:
+        # Set job label for Alloy integration pattern
+        - sourceLabels: [__address__]
+          targetLabel: job
+          replacement: "integrations/argocd"
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
 
 repoServer:
   autoscaling:
@@ -32,6 +64,22 @@ repoServer:
       cpu: "100m"
     limits:
       memory: "512Mi"
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      namespace: argocd
+      additionalLabels:
+        release: kube-prometheus-stack
+      relabelings:
+        # Set job label for Alloy integration pattern
+        - sourceLabels: [__address__]
+          targetLabel: job
+          replacement: "integrations/argocd"
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
 
 applicationSet:
   replicas: 2
