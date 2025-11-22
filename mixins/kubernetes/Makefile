@@ -25,6 +25,8 @@ dashboards: mixin.libsonnet
 	@echo "Generating dashboards..."
 	@mkdir -p $(DASHBOARDS_DIR)
 	$(MIXTOOL) generate dashboards -d $(DASHBOARDS_DIR) mixin.libsonnet
+	@echo "Removing disabled dashboards (files containing only 'null')..."
+	@find $(DASHBOARDS_DIR) -name "*.json" -type f -exec sh -c 'if [ "$$(cat "$$1" | tr -d "[:space:]")" = "null" ]; then echo "Removing $$1"; rm -f "$$1"; fi' _ {} \;
 
 .PHONY: alerts
 alerts: mixin.libsonnet
