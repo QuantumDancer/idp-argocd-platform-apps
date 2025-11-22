@@ -7,7 +7,7 @@ spec:
   configMapRef:
     name: cnpg-grafana-dashboard
     key: cnp.json
-  folder: Databases
+  folder: "Resources / Data"
   instanceSelector:
     matchLabels:
       dashboards: "grafana"
