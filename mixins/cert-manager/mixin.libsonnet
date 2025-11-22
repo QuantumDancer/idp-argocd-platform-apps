@@ -10,7 +10,7 @@ certManager {
   _config+:: {
     // Alloy uses "integrations/" prefix for job labels
     // See: https://grafana.com/docs/alloy/latest/
-    certManagerSelector: 'job="integrations/cert-manager"',
+    certManagerJobLabel: 'cert-manager/cert-manager',
 
     // Cluster configuration
     showMultiCluster: false,

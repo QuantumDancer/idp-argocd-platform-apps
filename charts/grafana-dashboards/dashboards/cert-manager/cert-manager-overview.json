@@ -35,10 +35,9 @@
       ],
       "_config": {
          "certManagerCertExpiryDays": "21",
-         "certManagerJobLabel": "cert-manager",
+         "certManagerJobLabel": "cert-manager/cert-manager",
          "certManagerRunbookURLEnabled": true,
          "certManagerRunbookURLPattern": "https://github.com/imusmanmalik/cert-manager-mixin/blob/main/RUNBOOK.md#%s",
-         "certManagerSelector": "job=\"integrations/cert-manager\"",
          "clusterLabel": "cluster",
          "clusterVariableSelector": "",
          "dashboards": {

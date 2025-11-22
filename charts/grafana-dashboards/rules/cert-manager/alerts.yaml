@@ -6,7 +6,7 @@ groups:
             description: New certificates will not be able to be minted, and existing ones can't be renewed until cert-manager is back.
             runbook_url: https://github.com/imusmanmalik/cert-manager-mixin/blob/main/RUNBOOK.md#certmanagerabsent
             summary: Cert Manager has disappeared from Prometheus service discovery.
-          expr: absent(up{job="cert-manager"})
+          expr: absent(up{job="cert-manager/cert-manager"})
           for: 10m
           labels:
             severity: critical
