@@ -1,0 +1,20 @@
+{{- if and .Values.rules.enabled .Values.rules.recordingRules }}
+{{- $rulesPath := "rules/prometheus-operator/rules.yaml" }}
+{{- if .Files.Get $rulesPath }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "grafana-dashboards.fullname" . }}-prometheus-operator-rules
+  namespace: {{ .Values.prometheus.namespace }}
+  labels:
+    {{- include "grafana-dashboards.labels" . | nindent 4 }}
+    {{- with .Values.prometheus.ruleLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    rule-component: "prometheus-operator"
+    rule-type: "recording"
+spec:
+{{ .Files.Get $rulesPath | indent 2 }}
+{{- end }}
+{{- end }}

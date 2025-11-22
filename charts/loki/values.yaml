@@ -99,14 +99,3 @@ loki:
     replicas: 0
   bloomGateway:
     replicas: 0
-
-loki-mixin:
-  grafanaDashboard:
-    enabled: true
-    folder: Observability
-    grafanaOperator:
-      enabled: true
-  monitor:
-    enabled: true
-    additionalLabels:
-      release: kube-prometheus-stack

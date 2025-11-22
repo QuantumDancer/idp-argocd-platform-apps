@@ -2,8 +2,5 @@ dependencies:
 - name: loki
   repository: https://grafana.github.io/helm-charts
   version: 6.23.0
-- name: loki-mixin
-  repository: https://charts.portefaix.xyz
-  version: 1.10.0
-digest: sha256:38452f8ae4548c26ecf88548d24f5265838cc6fc19167ea2f0ec1e75d38af67e
-generated: "2025-11-15T21:46:08.036898811+01:00"
+digest: sha256:d5c13b21388c29e2e10ab0419f70cd111ce7206f50f63136c184396356f1f2bf
+generated: "2025-11-22T20:50:40.679999999+01:00"

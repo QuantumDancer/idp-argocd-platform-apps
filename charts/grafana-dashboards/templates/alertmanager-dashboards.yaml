@@ -1,0 +1,44 @@
+{{- if .Values.dashboards.enabled }}
+{{- $component := "alertmanager" }}
+{{- $folder := .Values.dashboards.defaultFolder }}
+{{- if and .Values.dashboards.components (index .Values.dashboards.components $component) }}
+{{- if (index .Values.dashboards.components $component).folder }}
+{{- $folder = (index .Values.dashboards.components $component).folder }}
+{{- end }}
+{{- end }}
+{{- range $path, $_ := .Files.Glob "dashboards/alertmanager/*.json" }}
+{{- $name := base $path | trimSuffix ".json" | replace "_" "-" | lower }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ printf "dashboard-alertmanager-%s" $name }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    {{- include "grafana-dashboards.labels" $ | nindent 4 }}
+    {{ $.Values.grafana.configMapLabel }}: "1"
+    dashboard-source: "mixin"
+    dashboard-component: "alertmanager"
+data:
+  {{ base $path }}: |-
+{{ $.Files.Get $path | indent 4 }}
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: {{ printf "alertmanager-%s" $name }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    {{- include "grafana-dashboards.labels" $ | nindent 4 }}
+    dashboard-component: "alertmanager"
+spec:
+  instanceSelector:
+    {{- toYaml $.Values.grafana.instanceSelector | nindent 4 }}
+  {{- if $folder }}
+  folder: {{ $folder }}
+  {{- end }}
+  configMapRef:
+    name: {{ printf "dashboard-alertmanager-%s" $name }}
+    key: {{ base $path }}
+{{- end }}
+{{- end }}

@@ -1,0 +1,44 @@
+{{- if .Values.dashboards.enabled }}
+{{- $component := "loki" }}
+{{- $folder := .Values.dashboards.defaultFolder }}
+{{- if and .Values.dashboards.components (index .Values.dashboards.components $component) }}
+{{- if (index .Values.dashboards.components $component).folder }}
+{{- $folder = (index .Values.dashboards.components $component).folder }}
+{{- end }}
+{{- end }}
+{{- range $path, $_ := .Files.Glob "dashboards/loki/*.json" }}
+{{- $name := base $path | trimSuffix ".json" | replace "_" "-" | lower }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ printf "dashboard-loki-%s" $name }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    {{- include "grafana-dashboards.labels" $ | nindent 4 }}
+    {{ $.Values.grafana.configMapLabel }}: "1"
+    dashboard-source: "mixin"
+    dashboard-component: "loki"
+data:
+  {{ base $path }}: |-
+{{ $.Files.Get $path | indent 4 }}
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: {{ printf "loki-%s" $name }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    {{- include "grafana-dashboards.labels" $ | nindent 4 }}
+    dashboard-component: "loki"
+spec:
+  instanceSelector:
+    {{- toYaml $.Values.grafana.instanceSelector | nindent 4 }}
+  {{- if $folder }}
+  folder: {{ $folder }}
+  {{- end }}
+  configMapRef:
+    name: {{ printf "dashboard-loki-%s" $name }}
+    key: {{ base $path }}
+{{- end }}
+{{- end }}

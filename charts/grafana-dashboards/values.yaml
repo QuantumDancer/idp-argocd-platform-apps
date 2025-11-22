@@ -31,14 +31,35 @@ dashboards:
 
   # Per-component folder configuration
   # Override the folder for specific components
+  # Organized by platform engineering planes
   components:
+    # Observability Plane
+    alertmanager:
+      folder: "Observability"
+    grafana:
+      folder: "Observability"
+    loki:
+      folder: "Observability"
+    prometheus:
+      folder: "Observability"
+    prometheus-operator:
+      folder: "Observability"
+
+    # Integration and Delivery Plane
+    argocd:
+      folder: "Integration and Delivery"
+
+    # Resources / Compute Plane
     kubernetes:
-      folder: "Kubernetes"
-    # Example for future components:
-    # argocd:
-    #   folder: "ArgoCD"
-    # cert-manager:
-    #   folder: "Cert Manager"
+      folder: "Resources / Compute"
+    kube-state-metrics:
+      folder: "Resources / Compute"
+
+    # Resources / Services Plane
+    cert-manager:
+      folder: "Resources / Services"
+    coredns:
+      folder: "Resources / Services"
 
 # Rules and alerts configuration
 rules:

@@ -1,0 +1,20 @@
+{{- if and .Values.rules.enabled .Values.rules.alerts }}
+{{- $alertsPath := "rules/grafana/alerts.yaml" }}
+{{- if .Files.Get $alertsPath }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "grafana-dashboards.fullname" . }}-grafana-alerts
+  namespace: {{ .Values.prometheus.namespace }}
+  labels:
+    {{- include "grafana-dashboards.labels" . | nindent 4 }}
+    {{- with .Values.prometheus.ruleLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    rule-component: "grafana"
+    rule-type: "alerts"
+spec:
+{{ .Files.Get $alertsPath | indent 2 }}
+{{- end }}
+{{- end }}

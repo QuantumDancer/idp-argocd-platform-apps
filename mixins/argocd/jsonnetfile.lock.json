@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "dependencies": [
+    {
+      "source": {
+        "git": {
+          "remote": "https://github.com/grafana/jsonnet-libs.git",
+          "subdir": "argocd-mixin"
+        }
+      },
+      "version": "d1eede9462c03d44dcd4a707aa8e7dcaf155a552",
+      "sum": "bpYBLp5Zdw136efiueADgDmnB5U2gWl2Bd29h/1bEuA="
+    }
+  ],
+  "legacyImports": false
+}
