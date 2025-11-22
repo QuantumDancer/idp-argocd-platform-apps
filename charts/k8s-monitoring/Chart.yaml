@@ -11,6 +11,3 @@ dependencies:
   - name: alloy-mixin
     version: 0.3.2
     repository: https://charts.portefaix.xyz
-  - name: kubernetes-mixin
-    version: 1.5.1
-    repository: https://charts.portefaix.xyz

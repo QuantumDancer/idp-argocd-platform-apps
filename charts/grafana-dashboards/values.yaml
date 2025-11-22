@@ -1,0 +1,53 @@
+# Grafana Dashboards Configuration
+
+grafana:
+  # Instance selector for GrafanaDashboard CRs
+  # This should match the labels on your Grafana instance
+  instanceSelector:
+    matchLabels:
+      dashboards: "grafana"
+
+  # ConfigMap label that the Grafana Operator watches
+  # Dashboards in ConfigMaps with this label will be auto-discovered
+  configMapLabel: "grafana_dashboard"
+
+prometheus:
+  # Namespace where Prometheus is deployed
+  # PrometheusRule CRs will be created in this namespace
+  namespace: kube-prometheus-stack
+
+  # Labels to apply to PrometheusRule CRs
+  # The Prometheus Operator uses ruleSelector to select which rules to load
+  ruleLabels:
+    prometheus: kube-prometheus-stack
+    role: alert-rules
+
+# Dashboard configuration
+dashboards:
+  # Enable/disable dashboard deployment
+  enabled: true
+
+  # Default folder for components that don't specify one
+  defaultFolder: "Monitoring Mixins"
+
+  # Per-component folder configuration
+  # Override the folder for specific components
+  components:
+    kubernetes:
+      folder: "Kubernetes"
+    # Example for future components:
+    # argocd:
+    #   folder: "ArgoCD"
+    # cert-manager:
+    #   folder: "Cert Manager"
+
+# Rules and alerts configuration
+rules:
+  # Enable/disable PrometheusRule deployment
+  enabled: true
+
+  # Whether to deploy recording rules
+  recordingRules: true
+
+  # Whether to deploy alert rules
+  alerts: true

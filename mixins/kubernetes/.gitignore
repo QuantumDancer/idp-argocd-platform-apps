@@ -1,0 +1,5 @@
+# Jsonnet vendor directory (downloaded dependencies)
+vendor/
+
+# Lock file is committed to track exact versions
+# jsonnetfile.lock.json

@@ -5,8 +5,5 @@ dependencies:
 - name: alloy-mixin
   repository: https://charts.portefaix.xyz
   version: 0.3.2
-- name: kubernetes-mixin
-  repository: https://charts.portefaix.xyz
-  version: 1.5.1
-digest: sha256:b2d93bd5249bce30bd37d58504984e9e0b6789c294e7f87516f5b2e0a6ec510b
-generated: "2025-11-16T14:08:13.212397849+01:00"
+digest: sha256:b9507d73c2f432e7a8bf09a93bb7b4716707004beff012084be3e1559c08cc02
+generated: "2025-11-22T18:10:12.327288542+01:00"

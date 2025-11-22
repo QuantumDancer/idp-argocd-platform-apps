@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: grafana-dashboards
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "4" # Requires grafana and kube-prometheus-stack
+spec:
+  project: default
+
+  source:
+    repoURL: https://gitlab.home.rottlr.de/idp/platform/argocd-platform.git
+    targetRevision: main
+    path: charts/grafana-dashboards
+    helm:
+      releaseName: grafana-dashboards
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: grafana
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - ServerSideApply=true
