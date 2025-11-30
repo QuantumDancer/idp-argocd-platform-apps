@@ -1,0 +1,65 @@
+---
+# Example: Large PostgreSQL database with High Availability
+#
+# This creates a 3-instance PostgreSQL 17 database cluster optimized for
+# high-traffic production workloads requiring maximum resources and availability.
+#
+# Resources:
+# - Storage: 50 GiB per instance
+# - Compute: large tier (1000m CPU, 2 GiB RAM)
+# - Instances: 3 (1 primary + 2 read replicas)
+#
+# Use cases:
+# - High-traffic production applications
+# - Data-intensive workloads
+# - Applications requiring large dataset storage
+# - Critical systems with strict uptime requirements
+#
+# Cost consideration:
+# On AWS, consider whether CNPG (self-managed) or RDS (managed service)
+# is more appropriate based on operational requirements and budget.
+
+apiVersion: idp.rottler.io/v1alpha1
+kind: PostgreSQLDatabase
+metadata:
+  name: critical-app-db
+  namespace: production
+spec:
+  # Compute tier: small, medium, or large
+  # Large: 1000m CPU, 2 GiB RAM (homelab) / 8 vCPU, 32 GiB (AWS)
+  compute: large
+
+  # Storage size - substantial storage for large datasets
+  storage: 50Gi
+
+  # PostgreSQL version: latest stable version
+  version: "17"
+
+  # High availability: 3 instances for maximum uptime
+  ha: true
+
+# Expected status after provisioning:
+# status:
+#   phase: "Cluster in healthy state"
+#   ready: true
+#   readyInstances: 3
+#   connectionDetailsSecretRef: critical-app-db-superuser
+#   endpoint: critical-app-db-rw
+#   readOnlyEndpoint: critical-app-db-ro
+#   currentPrimary: critical-app-db-1
+
+# Future: When RDS composition is available (Phase 2), you can opt into AWS RDS
+# for critical data by adding:
+#
+# metadata:
+#   annotations:
+#     crossplane.io/composition-resource-name: postgresqldatabase-rds
+#
+# OR use compositionSelector:
+#
+# spec:
+#   # ... existing spec fields ...
+#   crossplane:
+#     compositionSelector:
+#       matchLabels:
+#         provider: rds

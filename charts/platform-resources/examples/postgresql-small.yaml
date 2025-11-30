@@ -1,0 +1,41 @@
+---
+# Example: Small PostgreSQL database for development/testing
+#
+# This creates a single-instance PostgreSQL 17 database with minimal resources,
+# suitable for development and testing environments.
+#
+# Resources:
+# - Storage: 2 GiB
+# - Compute: small tier (100m CPU, 512 MiB RAM)
+# - Instances: 1 (no HA)
+#
+# The database will be accessible via a connection secret named
+# "my-app-dev-db-superuser" containing username, password, host, and port.
+
+apiVersion: idp.rottler.io/v1alpha1
+kind: PostgreSQLDatabase
+metadata:
+  name: my-app-dev-db
+  namespace: my-app-dev
+spec:
+  # Compute tier: small, medium, or large
+  # Small: 100m CPU, 512 MiB RAM (homelab) / 2 vCPU, 8 GiB (AWS)
+  compute: small
+
+  # Storage size with units (Mi or Gi)
+  storage: 2Gi
+
+  # PostgreSQL version: "13", "14", "15", "16", or "17"
+  version: "17"
+
+  # High availability: false = 1 instance, true = 3 instances
+  ha: false
+
+# Expected status after provisioning:
+# status:
+#   phase: "Cluster in healthy state"
+#   ready: true
+#   readyInstances: 1
+#   connectionDetailsSecretRef: my-app-dev-db-superuser
+#   endpoint: my-app-dev-db-rw
+#   currentPrimary: my-app-dev-db-1

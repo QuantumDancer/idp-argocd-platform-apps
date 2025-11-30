@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: platform-resources
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  project: default
+
+  source:
+    repoURL: https://gitlab.home.rottlr.de/idp/platform/argocd-platform.git
+    targetRevision: main
+    path: charts/platform-resources
+    helm:
+      releaseName: platform-resources
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: platform-resources
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

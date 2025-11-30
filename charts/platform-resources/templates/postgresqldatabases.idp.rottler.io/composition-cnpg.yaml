@@ -1,0 +1,51 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/apiextensions.crossplane.io/composition_v1.json
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: postgresqldatabase-cnpg
+  labels:
+    provider: cnpg
+    crossplane.io/xrd: postgresqldatabases.idp.rottler.io
+spec:
+  compositeTypeRef:
+    apiVersion: idp.rottler.io/v1alpha1
+    kind: PostgreSQLDatabase
+  mode: Pipeline
+  pipeline:
+  - step: create-deployment-and-service
+    functionRef:
+      name: crossplane-contrib-function-go-templating
+    input:
+      apiVersion: gotemplating.fn.crossplane.io/v1beta1
+      kind: GoTemplate
+      source: Inline
+      inline:
+        template: |
+          ---
+          apiVersion: postgresql.cnpg.io/v1
+          kind: Cluster
+          metadata:
+            name: {{ `{{ .observed.composite.resource.metadata.name }}` }}
+            annotations:
+              gotemplating.fn.crossplane.io/composition-resource-name: cluster
+          spec:
+            instances: {{ `{{ if .observed.composite.resource.spec.ha }}3{{ else }}1{{ end }}` }}
+            imageName: ghcr.io/cloudnative-pg/postgresql:{{ `{{ .observed.composite.resource.spec.version }}` }}
+            storage:
+              size: {{ `{{ .observed.composite.resource.spec.storage }}` }}
+            monitoring:
+              enablePodMonitor: true
+          ---
+          apiVersion: idp.rottler.io/v1alpha1
+          kind: PostgreSQLDatabase
+          status:
+            phase: {{ `{{ get (getComposedResource . "cluster").status "phase" | default "Provisioning" }}` }}
+            readyInstances: {{ `{{ get (getComposedResource . "cluster").status "readyInstances" | default 0 }}` }}
+            ready: {{ `{{ $cluster := getComposedResource . "cluster" }}{{ $ready := false }}{{ range $cluster.status.conditions }}{{ if and (eq .type "Ready") (eq .status "True") }}{{ $ready = true }}{{ end }}{{ end }}{{ $ready }}` }}
+            connectionDetailsSecretRef: {{ `{{ .observed.composite.resource.metadata.name }}` }}-superuser
+            endpoint: {{ `{{ $endpoint := get (getComposedResource . "cluster").status "writeService" }}{{ if $endpoint }}{{ $endpoint }}{{ end }}` }}
+            readOnlyEndpoint: {{ `{{ $readEndpoint := get (getComposedResource . "cluster").status "readService" }}{{ if $readEndpoint }}{{ $readEndpoint }}{{ end }}` }}
+            currentPrimary: {{ `{{ $primary := get (getComposedResource . "cluster").status "currentPrimary" }}{{ if $primary }}{{ $primary }}{{ end }}` }}
+  - step: automatically-detect-ready-composed-resources
+    functionRef:
+      name: crossplane-contrib-function-auto-ready

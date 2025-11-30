@@ -1,0 +1,49 @@
+---
+# Example: Medium PostgreSQL database with High Availability
+#
+# This creates a 3-instance PostgreSQL 16 database cluster with automatic
+# failover, suitable for production workloads that require high availability.
+#
+# Resources:
+# - Storage: 10 GiB per instance
+# - Compute: medium tier (500m CPU, 1 GiB RAM)
+# - Instances: 3 (1 primary + 2 read replicas)
+#
+# High Availability features:
+# - Automatic failover if primary fails
+# - Synchronous replication between instances
+# - Read-only endpoint for load distribution
+#
+# The database will be accessible via:
+# - Write endpoint: {name}-rw (primary instance)
+# - Read endpoint: {name}-ro (all replicas)
+# - Connection secret: {name}-superuser
+
+apiVersion: idp.rottler.io/v1alpha1
+kind: PostgreSQLDatabase
+metadata:
+  name: my-app-prod-db
+  namespace: my-app-prod
+spec:
+  # Compute tier: small, medium, or large
+  # Medium: 500m CPU, 1 GiB RAM (homelab) / 4 vCPU, 16 GiB (AWS)
+  compute: medium
+
+  # Storage size - each of the 3 instances gets this amount
+  storage: 10Gi
+
+  # PostgreSQL version: using LTS version 16
+  version: "16"
+
+  # High availability: 3 instances for automatic failover
+  ha: true
+
+# Expected status after provisioning:
+# status:
+#   phase: "Cluster in healthy state"
+#   ready: true
+#   readyInstances: 3
+#   connectionDetailsSecretRef: my-app-prod-db-superuser
+#   endpoint: my-app-prod-db-rw
+#   readOnlyEndpoint: my-app-prod-db-ro
+#   currentPrimary: my-app-prod-db-1 (or -2, -3 after failover)

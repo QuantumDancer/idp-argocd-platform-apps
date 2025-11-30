@@ -1,0 +1,97 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/apiextensions.crossplane.io/compositeresourcedefinition_v2.json
+apiVersion: apiextensions.crossplane.io/v2
+kind: CompositeResourceDefinition
+metadata:
+  name: postgresqldatabases.idp.rottler.io
+spec:
+  scope: Namespaced
+  group: idp.rottler.io
+  names:
+    kind: PostgreSQLDatabase
+    plural: postgresqldatabases
+  defaultCompositionRef:
+    name: postgresqldatabase-cnpg
+  versions:
+    - name: v1alpha1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                compute:
+                  type: string
+                  enum:
+                    - small
+                    - medium
+                    - large
+                  description: |
+                    Compute tier for CPU and memory.
+
+                    Homelab environment:
+                    - small:   100m CPU, 512 MiB RAM
+                    - medium:  500m CPU, 1 GiB RAM
+                    - large:  1000m CPU, 2 GiB RAM
+                    
+                    AWS (dev/prod environment):
+                    - small:  2 vCPU, 8  GiB RAM (db.m7g.large)
+                    - medium: 4 vCPU, 16 GiB RAM (db.m7g.large)
+                    - large:  8 vCPU, 32 GiB RAM (db.m7g.large)
+                storage:
+                  type: string
+                  pattern: '^[0-9]+(Mi|Gi)$'
+                  default: "2Gi"
+                  description: |
+                    Storage size (e.g., "500Mi", "2Gi", "10Gi").
+                    Supported units: Mi, Gi.
+                version:
+                  type: string
+                  enum:
+                    - "13"
+                    - "14"
+                    - "15"
+                    - "16"
+                    - "17"
+                  default: "17"
+                  description: PostgreSQL version of the database. Supports version 13, 14, 15, 16, and 17.
+                ha:
+                  type: boolean
+                  default: false
+                  description: |
+                    Set to true to enable high availability for the database.
+                    Creates three instances (one write, two read replicas) for HA mode.
+              required:
+                - compute
+                - storage
+                - version
+            status:
+              type: object
+              properties:
+                phase:
+                  description: The current phase of the database (e.g., Provisioning, Ready, Failed).
+                  type: string
+                ready:
+                  description: Whether the database is ready for connections.
+                  type: boolean
+                readyInstances:
+                  description: The number of available instances.
+                  type: integer
+                connectionDetailsSecretRef:
+                  description: The name of the secret that contains the connection details.
+                  type: string
+                endpoint:
+                  description: The primary (read-write) endpoint for the database.
+                  type: string
+                readOnlyEndpoint:
+                  description: The read-only endpoint for the database (for HA configurations).
+                  type: string
+                currentPrimary:
+                  description: The name of the current primary instance.
+                  type: string
+              required:
+                - ready
+                - readyInstances
+                - connectionDetailsSecretRef
