@@ -4,7 +4,21 @@ kind: ClusterRole
 metadata:
   name: crossplane:composed:cnpg-manager
   labels:
-    app.kubernetes.io/managed-by: crossplane
+    # Kubernetes standard labels
+    app.kubernetes.io/name: postgresql-database-rbac
+    app.kubernetes.io/instance: cnpg-composer
+    app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+    app.kubernetes.io/component: database-composition-rbac
+    app.kubernetes.io/managed-by: helm
+
+    # IDP platform labels
+    idp.rottler.io/team: platform
+    idp.rottler.io/environment: homelab
+    idp.rottler.io/tier: platform
+
+    # Cost allocation
+    idp.rottler.io/cost-center: platform
+    idp.rottler.io/project: idp
 rules:
   # CloudNativePG Cluster management
   - apiGroups:
@@ -88,7 +102,21 @@ kind: ClusterRoleBinding
 metadata:
   name: crossplane:composed:cnpg-manager
   labels:
-    app.kubernetes.io/managed-by: crossplane
+    # Kubernetes standard labels
+    app.kubernetes.io/name: postgresql-database-rbac
+    app.kubernetes.io/instance: cnpg-composer
+    app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+    app.kubernetes.io/component: database-composition-rbac-binding
+    app.kubernetes.io/managed-by: helm
+
+    # IDP platform labels
+    idp.rottler.io/team: platform
+    idp.rottler.io/environment: homelab
+    idp.rottler.io/tier: platform
+
+    # Cost allocation
+    idp.rottler.io/cost-center: platform
+    idp.rottler.io/project: idp
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole

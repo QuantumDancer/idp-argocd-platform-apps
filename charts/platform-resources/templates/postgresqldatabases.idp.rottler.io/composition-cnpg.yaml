@@ -4,8 +4,27 @@ kind: Composition
 metadata:
   name: postgresqldatabase-cnpg
   labels:
-    provider: cnpg
+    # Kubernetes standard labels
+    app.kubernetes.io/name: postgresql-composition
+    app.kubernetes.io/instance: cnpg-cloudnative
+    app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+    app.kubernetes.io/component: database-composition
+    app.kubernetes.io/managed-by: helm
+
+    # IDP platform labels
+    idp.rottler.io/team: platform
+    idp.rottler.io/environment: homelab
+    idp.rottler.io/tier: platform
+
+    # Cost allocation
+    idp.rottler.io/cost-center: platform
+    idp.rottler.io/project: idp
+
+    # Crossplane integration
     crossplane.io/xrd: postgresqldatabases.idp.rottler.io
+
+    # Label to select composition
+    provider: cnpg
 spec:
   compositeTypeRef:
     apiVersion: idp.rottler.io/v1alpha1
@@ -28,12 +47,27 @@ spec:
           {{- $xrName := .observed.composite.resource.metadata.name -}}
           {{- $vaultPath := .observed.composite.resource.spec.connectionSecret.vaultPath | default (printf "idp/databases/%s/%s" $namespace $databaseName) -}}
           {{- $secretName := printf "%s-credentials" $xrName -}}
+          {{- $labels := dict
+            "app.kubernetes.io/name" "postgresql-database-instance"
+            "app.kubernetes.io/instance" .observed.composite.resource.metadata.name
+            "app.kubernetes.io/component" "database-instance"
+            "app.kubernetes.io/managed-by" "crossplane"
+            "idp.rottler.io/team" (index .observed.composite.resource.metadata.labels "idp.rottler.io/team")
+            "idp.rottler.io/environment" (index .observed.composite.resource.metadata.labels "idp.rottler.io/environment")
+            "idp.rottler.io/tier" (index .observed.composite.resource.metadata.labels "idp.rottler.io/tier")
+            "idp.rottler.io/cost-center" (index .observed.composite.resource.metadata.labels "idp.rottler.io/cost-center")
+            "idp.rottler.io/project" (index .observed.composite.resource.metadata.labels "idp.rottler.io/project")
+          -}}
           {{- if eq $secretType "pull" }}` }}
           ---
           apiVersion: external-secrets.io/v1
           kind: ExternalSecret
           metadata:
             name: {{ `{{ $xrName }}` }}-external-secret
+            labels:
+              {{ `{{- range $key, $value := $labels }}` }}
+              {{ `{{ $key }}` }}: {{ `{{ $value | quote }}` }}
+              {{ `{{- end }}` }}
             annotations:
               gotemplating.fn.crossplane.io/composition-resource-name: external-secret
           spec:
@@ -57,6 +91,10 @@ spec:
           kind: Secret
           metadata:
             name: {{ `{{ $secretName }}` }}
+            labels:
+              {{ `{{- range $key, $value := $labels }}` }}
+              {{ `{{ $key }}` }}: {{ `{{ $value | quote }}` }}
+              {{ `{{- end }}` }}
             annotations:
               gotemplating.fn.crossplane.io/composition-resource-name: database-secret
           type: Opaque
@@ -68,6 +106,10 @@ spec:
           kind: PushSecret
           metadata:
             name: {{ `{{ $xrName }}` }}-push-secret
+            labels:
+              {{ `{{- range $key, $value := $labels }}` }}
+              {{ `{{ $key }}` }}: {{ `{{ $value | quote }}` }}
+              {{ `{{- end }}` }}
             annotations:
               gotemplating.fn.crossplane.io/composition-resource-name: push-secret
           spec:
@@ -95,6 +137,10 @@ spec:
           kind: Cluster
           metadata:
             name: {{ `{{ .observed.composite.resource.metadata.name }}` }}
+            labels:
+              {{ `{{- range $key, $value := $labels }}` }}
+              {{ `{{ $key }}` }}: {{ `{{ $value | quote }}` }}
+              {{ `{{- end }}` }}
             annotations:
               gotemplating.fn.crossplane.io/composition-resource-name: cluster
           spec:

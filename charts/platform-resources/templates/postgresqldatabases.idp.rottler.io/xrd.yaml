@@ -3,6 +3,22 @@ apiVersion: apiextensions.crossplane.io/v2
 kind: CompositeResourceDefinition
 metadata:
   name: postgresqldatabases.idp.rottler.io
+  labels:
+    # Kubernetes standard labels
+    app.kubernetes.io/name: postgresql-database
+    app.kubernetes.io/instance: cnpg-v1alpha1
+    app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+    app.kubernetes.io/component: database-platform
+    app.kubernetes.io/managed-by: helm
+
+    # IDP platform labels
+    idp.rottler.io/team: platform
+    idp.rottler.io/environment: homelab
+    idp.rottler.io/tier: platform
+
+    # Cost allocation
+    idp.rottler.io/cost-center: platform
+    idp.rottler.io/project: idp
 spec:
   scope: Namespaced
   group: idp.rottler.io
