@@ -1,0 +1,15 @@
+apiVersion: idp.rottler.io/v1alpha1
+kind: PostgreSQLDatabase
+metadata:
+  name: myapp-production-db
+  namespace: production
+spec:
+  compute: medium
+  storage: 10Gi
+  version: "17"
+  ha: true
+  databaseName: myapp_prod
+  owner: myapp_user
+  connectionSecret:
+    type: pull
+    vaultPath: idp/databases/production/myapp-prod

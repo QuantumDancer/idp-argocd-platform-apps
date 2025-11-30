@@ -27,6 +27,61 @@ rules:
       - get
       - list
       - watch
+  # Secret management (for push mode)
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+  # ExternalSecret management (for pull mode)
+  - apiGroups:
+      - external-secrets.io
+    resources:
+      - externalsecrets
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+  - apiGroups:
+      - external-secrets.io
+    resources:
+      - externalsecrets/status
+    verbs:
+      - get
+      - list
+      - watch
+  # PushSecret management (for push mode)
+  - apiGroups:
+      - external-secrets.io
+    resources:
+      - pushsecrets
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+  - apiGroups:
+      - external-secrets.io
+    resources:
+      - pushsecrets/status
+    verbs:
+      - get
+      - list
+      - watch
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding

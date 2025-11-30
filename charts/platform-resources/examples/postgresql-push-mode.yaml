@@ -1,0 +1,12 @@
+apiVersion: idp.rottler.io/v1alpha1
+kind: PostgreSQLDatabase
+metadata:
+  name: myapp-dev-db
+  namespace: development
+spec:
+  compute: small
+  storage: 2Gi
+  version: "17"
+  ha: false
+  connectionSecret:
+    type: push

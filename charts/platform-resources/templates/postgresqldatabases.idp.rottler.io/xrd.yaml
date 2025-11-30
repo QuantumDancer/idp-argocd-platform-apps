@@ -63,6 +63,31 @@ spec:
                   description: |
                     Set to true to enable high availability for the database.
                     Creates three instances (one write, two read replicas) for HA mode.
+                databaseName:
+                  type: string
+                  description: "Name of the database to create. Defaults to the XR instance name if not specified."
+                  pattern: '^[a-zA-Z_][a-zA-Z0-9_]*$'
+                owner:
+                  type: string
+                  description: "Database owner username. Defaults to the XR instance name if not specified."
+                  pattern: '^[a-zA-Z_][a-zA-Z0-9_]*$'
+                connectionSecret:
+                  type: object
+                  description: "Configuration for database connection secret management."
+                  properties:
+                    type:
+                      type: string
+                      enum:
+                        - pull
+                        - push
+                      default: pull
+                      description: |
+                        Secret management mode:
+                        - pull: Pull existing credentials from Vault (default, recommended for production)
+                        - push: Generate random password and push to Vault (convenient for dev/test)
+                    vaultPath:
+                      type: string
+                      description: "Vault KV v2 path for credentials (relative to 'secrets/' mount). Defaults to: idp/databases/{namespace}/{databaseName}"
               required:
                 - compute
                 - storage

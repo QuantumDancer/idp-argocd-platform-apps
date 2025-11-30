@@ -21,6 +21,75 @@ spec:
       source: Inline
       inline:
         template: |
+          {{ `{{- $secretType := .observed.composite.resource.spec.connectionSecret.type | default "pull" -}}
+          {{- $databaseName := .observed.composite.resource.spec.databaseName | default .observed.composite.resource.metadata.name -}}
+          {{- $owner := .observed.composite.resource.spec.owner | default .observed.composite.resource.metadata.name -}}
+          {{- $namespace := .observed.composite.resource.metadata.namespace -}}
+          {{- $xrName := .observed.composite.resource.metadata.name -}}
+          {{- $vaultPath := .observed.composite.resource.spec.connectionSecret.vaultPath | default (printf "idp/databases/%s/%s" $namespace $databaseName) -}}
+          {{- $secretName := printf "%s-credentials" $xrName -}}
+          {{- if eq $secretType "pull" }}` }}
+          ---
+          apiVersion: external-secrets.io/v1
+          kind: ExternalSecret
+          metadata:
+            name: {{ `{{ $xrName }}` }}-external-secret
+            annotations:
+              gotemplating.fn.crossplane.io/composition-resource-name: external-secret
+          spec:
+            secretStoreRef:
+              name: vault-backend
+              kind: ClusterSecretStore
+            refreshInterval: "1h0m0s"
+            target:
+              name: {{ `{{ $secretName }}` }}
+              creationPolicy: Owner
+            dataFrom:
+              - extract:
+                  key: {{ `{{ $vaultPath }}` }}
+                  conversionStrategy: Default
+                  decodingStrategy: None
+                  metadataPolicy: None
+          {{ `{{- end }}
+          {{- if eq $secretType "push" }}` }}
+          ---
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: {{ `{{ $secretName }}` }}
+            annotations:
+              gotemplating.fn.crossplane.io/composition-resource-name: database-secret
+          type: Opaque
+          stringData:
+            username: {{ `{{ $owner }}` }}
+            password: {{ `{{ randAlphaNum 32 }}` }}
+          ---
+          apiVersion: external-secrets.io/v1alpha1
+          kind: PushSecret
+          metadata:
+            name: {{ `{{ $xrName }}` }}-push-secret
+            annotations:
+              gotemplating.fn.crossplane.io/composition-resource-name: push-secret
+          spec:
+            refreshInterval: 1h
+            secretStoreRefs:
+              - name: vault-backend
+                kind: ClusterSecretStore
+            selector:
+              secret:
+                name: {{ `{{ $secretName }}` }}
+            data:
+              - match:
+                  secretKey: username
+                  remoteRef:
+                    remoteKey: {{ `{{ $vaultPath }}` }}
+                    property: username
+              - match:
+                  secretKey: password
+                  remoteRef:
+                    remoteKey: {{ `{{ $vaultPath }}` }}
+                    property: password
+          {{ `{{- end }}` }}
           ---
           apiVersion: postgresql.cnpg.io/v1
           kind: Cluster
@@ -35,6 +104,12 @@ spec:
               size: {{ `{{ .observed.composite.resource.spec.storage }}` }}
             monitoring:
               enablePodMonitor: true
+            bootstrap:
+              initdb:
+                database: {{ `{{ $databaseName }}` }}
+                owner: {{ `{{ $owner }}` }}
+                secret:
+                  name: {{ `{{ $secretName }}` }}
           ---
           apiVersion: idp.rottler.io/v1alpha1
           kind: PostgreSQLDatabase
@@ -42,7 +117,7 @@ spec:
             phase: {{ `{{ get (getComposedResource . "cluster").status "phase" | default "Provisioning" }}` }}
             readyInstances: {{ `{{ get (getComposedResource . "cluster").status "readyInstances" | default 0 }}` }}
             ready: {{ `{{ $cluster := getComposedResource . "cluster" }}{{ $ready := false }}{{ range $cluster.status.conditions }}{{ if and (eq .type "Ready") (eq .status "True") }}{{ $ready = true }}{{ end }}{{ end }}{{ $ready }}` }}
-            connectionDetailsSecretRef: {{ `{{ .observed.composite.resource.metadata.name }}` }}-superuser
+            connectionDetailsSecretRef: {{ `{{ $secretName }}` }}
             endpoint: {{ `{{ $endpoint := get (getComposedResource . "cluster").status "writeService" }}{{ if $endpoint }}{{ $endpoint }}{{ end }}` }}
             readOnlyEndpoint: {{ `{{ $readEndpoint := get (getComposedResource . "cluster").status "readService" }}{{ if $readEndpoint }}{{ $readEndpoint }}{{ end }}` }}
             currentPrimary: {{ `{{ $primary := get (getComposedResource . "cluster").status "currentPrimary" }}{{ if $primary }}{{ $primary }}{{ end }}` }}
