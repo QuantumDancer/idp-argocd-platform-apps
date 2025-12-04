@@ -81,7 +81,7 @@ kubectl apply --dry-run=server -f <file>
 
 - Repository credentials stored in `bootstrap/repo.yaml` (gitignored)
 - Uses GitLab Deploy Tokens for authentication
-- Repository URL: https://gitlab.home.rottlr.de/idp/platform/argocd-platform.git
+- Repository URL: https://gitlab.home.rottlr.de/idp/platform/idp-argocd-platform-apps.git
 
 **Gateway API**:
 

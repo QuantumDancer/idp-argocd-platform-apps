@@ -50,7 +50,7 @@ metadata:
   namespace: argocd
 spec:
   source:
-    repoURL: https://gitlab.home.rottlr.de/idp/platform/argocd-platform.git
+    repoURL: https://gitlab.home.rottlr.de/idp/platform/idp-argocd-platform-apps.git
     targetRevision: main
     path: charts/grafana-dashboards
   destination:

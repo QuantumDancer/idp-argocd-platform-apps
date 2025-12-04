@@ -7,6 +7,6 @@ metadata:
     argocd.argoproj.io/secret-type: repository
 stringData:
   type: git
-  url: https://gitlab.home.rottlr.de/idp/platform/argocd-platform.git
+  url: https://gitlab.home.rottlr.de/idp/platform/idp-argocd-platform-apps.git
   username: TODO
   password: TODO
