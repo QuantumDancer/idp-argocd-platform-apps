@@ -1,5 +1,7 @@
 # Platform Applications
 
+For the main idea, see [IDP.md](./IDP.md).
+
 ## Bootstrapping
 
 - Create a GitLab Deploy Token for this repo: https://docs.gitlab.com/user/project/deploy_tokens/#create-a-deploy-token
