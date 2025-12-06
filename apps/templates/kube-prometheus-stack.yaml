@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/argoproj.io/application_v1alpha1.json
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -14,6 +15,9 @@ spec:
     path: charts/kube-prometheus-stack
     helm:
       releaseName: kube-prometheus-stack
+      valueFiles:
+        - values.yaml
+        - environments/{{ .Values.environment }}.yaml
 
   destination:
     server: https://kubernetes.default.svc

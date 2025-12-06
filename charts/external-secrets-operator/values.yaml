@@ -1,3 +1,13 @@
+# Vault configuration
+vault:
+  server: "https://vault.home.rottlr.de:8200"  # Default, override in environments/<env>.yaml
+  path: "secrets"
+  version: "v2"
+  auth:
+    kubernetes:
+      mountPath: "kubernetes"
+      role: "external-secrets-operator"
+
 # Values for external-secrets subchart
 external-secrets:
   installCRDs: true

@@ -1,0 +1,5 @@
+apiVersion: v2
+name: platform-apps
+description: Platform Applications managed by ArgoCD
+version: 0.1.0
+appVersion: "1.0.0"

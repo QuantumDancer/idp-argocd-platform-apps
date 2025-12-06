@@ -1,27 +1,29 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/argoproj.io/application_v1alpha1.json
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: k8s-monitoring
+  name: kyverno
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "1"
+    argocd.argoproj.io/sync-wave: "0"
 spec:
   project: default
 
   source:
     repoURL: https://gitlab.home.rottlr.de/idp/platform/idp-argocd-platform-apps.git
     targetRevision: main
-    path: charts/k8s-monitoring
+    path: charts/kyverno
     helm:
-      releaseName: k8s-monitoring
+      releaseName: kyverno
 
   destination:
     server: https://kubernetes.default.svc
-    namespace: k8s-monitoring
+    namespace: kyverno
 
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
     syncOptions:
+      - CreateNamespace=true
       - ServerSideApply=true

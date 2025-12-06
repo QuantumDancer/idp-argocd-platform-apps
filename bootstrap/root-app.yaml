@@ -1,3 +1,4 @@
+# TODO: Apply via Terraform in the future. Set value for environment in Terraform.
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -10,6 +11,11 @@ spec:
     repoURL: https://gitlab.home.rottlr.de/idp/platform/idp-argocd-platform-apps.git
     targetRevision: main
     path: apps
+    helm:
+      releaseName: platform-apps
+      parameters:
+        - name: environment
+          value: homelab
 
   destination:
     server: https://kubernetes.default.svc

@@ -1,28 +1,31 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/argoproj.io/application_v1alpha1.json
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: grafana
+  name: argocd-config
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "3" # Required grafana-database
+    argocd.argoproj.io/sync-wave: "1"
 spec:
   project: default
 
   source:
     repoURL: https://gitlab.home.rottlr.de/idp/platform/idp-argocd-platform-apps.git
     targetRevision: main
-    path: charts/grafana
+    path: charts/argocd-config
     helm:
-      releaseName: grafana
+      releaseName: argocd-config
+      valueFiles:
+        - values.yaml
+        - environments/{{ .Values.environment }}.yaml
 
   destination:
     server: https://kubernetes.default.svc
-    namespace: grafana
+    namespace: argocd
 
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
     syncOptions:
-      - ServerSideApply=true
       - CreateNamespace=true

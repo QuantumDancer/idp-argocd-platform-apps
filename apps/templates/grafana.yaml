@@ -1,28 +1,32 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/argoproj.io/application_v1alpha1.json
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: loki
+  name: grafana
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "0"
+    argocd.argoproj.io/sync-wave: "3" # Required grafana-database
 spec:
   project: default
 
   source:
     repoURL: https://gitlab.home.rottlr.de/idp/platform/idp-argocd-platform-apps.git
     targetRevision: main
-    path: charts/loki
+    path: charts/grafana
     helm:
-      releaseName: loki
+      releaseName: grafana
+      valueFiles:
+        - values.yaml
+        - environments/{{ .Values.environment }}.yaml
 
   destination:
     server: https://kubernetes.default.svc
-    namespace: loki
+    namespace: grafana
 
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
     syncOptions:
-      - CreateNamespace=true
       - ServerSideApply=true
+      - CreateNamespace=true

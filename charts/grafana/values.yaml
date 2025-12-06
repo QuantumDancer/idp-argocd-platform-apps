@@ -1,3 +1,13 @@
+# Grafana configuration
+grafana:
+  hostname: grafana.k8s.home.rottlr.de  # Default, override in environments/<env>.yaml
+
+# Gateway configuration
+gateway:
+  name: external  # Default, override in environments/<env>.yaml
+  namespace: gateway
+
+# Grafana Operator configuration
 grafana-operator:
   dashboard:
     enabled: true

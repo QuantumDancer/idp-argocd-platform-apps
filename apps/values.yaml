@@ -1,0 +1,5 @@
+# Default values for platform-apps Helm chart
+# This file provides default configuration that can be overridden
+
+# Environment name
+environment: homelab

@@ -1,0 +1,33 @@
+# Homelab environment-specific configuration for k8s-monitoring
+
+k8s-monitoring:
+  cluster:
+    name: home
+
+  # Homelab resource allocations
+  alloy-metrics:
+    alloy:
+      resources:
+        requests:
+          cpu: 100m
+          memory: 512Mi
+        limits:
+          memory: 2Gi
+
+  alloy-singleton:
+    alloy:
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          memory: 512Mi
+
+  alloy-logs:
+    alloy:
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          memory: 512Mi

@@ -1,0 +1,10 @@
+# Homelab environment-specific configuration for external-secrets-operator
+
+vault:
+  server: "https://vault.home.rottlr.de:8200"
+  path: "secrets"
+  version: "v2"
+  auth:
+    kubernetes:
+      mountPath: "kubernetes"
+      role: "external-secrets-operator"
