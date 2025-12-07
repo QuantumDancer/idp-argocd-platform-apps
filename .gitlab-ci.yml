@@ -1,0 +1,70 @@
+stages:
+  - test
+  - security
+
+include:
+  - template: Jobs/Secret-Detection.gitlab-ci.yml
+
+###############
+# TEST STAGE  #
+###############
+
+helm-lint:
+  stage: test
+  image:
+    name: alpine/helm:latest
+    entrypoint: [""]
+  before_script:
+    - apk add --no-cache bash
+    - bash scripts/setup-helm-repos.sh
+  script:
+    - bash scripts/helm-lint.sh
+  cache:
+    key:
+      files:
+        - charts/*/Chart.lock
+    paths:
+      - charts/*/charts/
+      - /root/.cache/helm/repository/
+      - /root/.config/helm/repositories.yaml
+    policy: pull-push
+  artifacts:
+    paths:
+      - reports/
+    expire_in: 7 days
+    when: always
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "main"
+
+##################
+# SECURITY STAGE #
+##################
+
+helm-vulnerability-scan:
+  stage: security
+  image:
+    name: aquasec/trivy:latest
+    entrypoint: [""]
+  before_script:
+    - apk add --no-cache bash helm jq
+    - bash scripts/setup-helm-repos.sh
+  script:
+    - bash scripts/trivy-scan.sh
+  cache:
+    key:
+      files:
+        - charts/*/Chart.lock
+    paths:
+      - charts/*/charts/
+      - /root/.cache/helm/repository/
+      - /root/.config/helm/repositories.yaml
+    policy: pull-push
+  artifacts:
+    paths:
+      - reports/
+    expire_in: 7 days
+    when: always
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "main"

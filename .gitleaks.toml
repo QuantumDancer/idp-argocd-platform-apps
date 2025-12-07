@@ -1,0 +1,7 @@
+title = "ArgoCD Platform Secret Detection"
+
+[allowlist]
+paths = ["bootstrap/repo.yaml", "charts/.*/charts/.*"]
+
+# Allow ArgoCD Application manifests (they reference secrets, don"t contain them)
+regexes = ["server: https://kubernetes.default.svc", "targetRevision: main"]
