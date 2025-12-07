@@ -1,4 +1,5 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/argoproj.io/application_v1alpha1.json
+# See https://kyverno.io/docs/installation/platform-notes/#notes-for-argocd-users for best practices
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -6,6 +7,7 @@ metadata:
   namespace: argocd
   annotations:
     argocd.argoproj.io/sync-wave: "0"
+    argocd.argoproj.io/compare-options: ServerSideDiff=true,IncludeMutationWebhook=true
 spec:
   project: default
 
@@ -15,6 +17,9 @@ spec:
     path: charts/kyverno
     helm:
       releaseName: kyverno
+      values: |
+        webhookLabels:
+          app.kubernetes.io/managed-by: argocd
 
   destination:
     server: https://kubernetes.default.svc

@@ -1,4 +1,5 @@
 # Values for kyverno subchart
+# See https://kyverno.io/docs/installation/platform-notes/#notes-for-argocd-users for best practices
 kyverno:
   admissionController:
     replicas: 1
@@ -23,3 +24,6 @@ kyverno:
     resources:
       requests:
         memory: 128Mi
+
+  config:
+    preserve: false
