@@ -14,7 +14,7 @@ controller:
         # Set job label for Alloy integration pattern
         - sourceLabels: [__address__]
           targetLabel: job
-          replacement: "integrations/argocd"
+          replacement: "integrations/argocd/application-controller"
         - sourceLabels: [__meta_kubernetes_pod_name]
           targetLabel: pod
         - sourceLabels: [__meta_kubernetes_namespace]
@@ -185,7 +185,7 @@ server:
         # Set job label for Alloy integration pattern
         - sourceLabels: [__address__]
           targetLabel: job
-          replacement: "integrations/argocd"
+          replacement: "integrations/argocd/argocd-server"
         - sourceLabels: [__meta_kubernetes_pod_name]
           targetLabel: pod
         - sourceLabels: [__meta_kubernetes_namespace]
@@ -232,7 +232,7 @@ repoServer:
         # Set job label for Alloy integration pattern
         - sourceLabels: [__address__]
           targetLabel: job
-          replacement: "integrations/argocd"
+          replacement: "integrations/argocd/repo-server"
         - sourceLabels: [__meta_kubernetes_pod_name]
           targetLabel: pod
         - sourceLabels: [__meta_kubernetes_namespace]
