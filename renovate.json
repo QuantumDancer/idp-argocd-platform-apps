@@ -5,5 +5,21 @@
   ],
   "assignees": [
     "benjamin"
+  ],
+  "packageRules": [
+    {
+      "description": "Automerge Helm chart patch updates after 3 days and passing CI",
+      "matchManagers": [
+        "helmv3"
+      ],
+      "matchUpdateTypes": [
+        "patch"
+      ],
+      "automerge": true,
+      "automergeType": "pr",
+      "platformAutomerge": true,
+      "ignoreTests": false,
+      "minimumReleaseAge": "3 days"
+    }
   ]
 }
