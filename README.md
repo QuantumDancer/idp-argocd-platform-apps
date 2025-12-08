@@ -100,7 +100,7 @@ See https://platformengineering.org/platform-tooling
 - [ ] Migrate existing tools from Flux CD config
   - [ ] Gateway API CRDs
   - [ ] Cilium configuration
-  - [ ] cert-manager
+  - [x] cert-manager
   - [ ] external-dns
   - [ ] Longhorn (homelab only)
 
