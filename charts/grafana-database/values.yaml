@@ -4,7 +4,7 @@ cluster:
   version:
     postgresql: "16"
   cluster:
-    instances: 3
+    instances: 1
     storage:
       size: 4Gi
     monitoring:
