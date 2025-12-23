@@ -1,0 +1,18 @@
+external-dns:
+  provider:
+    name: cloudflare
+  sources:
+    - gateway-httproute
+  env:
+    - name: CF_API_TOKEN
+      valueFrom:
+        secretKeyRef:
+          name: cloudflare-api-token
+          key: apiToken
+  # Resource optimization based on KRR recommendations
+  resources:
+    requests:
+      cpu: 10m
+      memory: 128Mi
+    limits:
+      memory: 128Mi

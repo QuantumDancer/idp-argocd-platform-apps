@@ -101,7 +101,7 @@ See https://platformengineering.org/platform-tooling
   - [x] Gateway API CRDs
   - [x] Cilium configuration
   - [x] cert-manager
-  - [ ] external-dns
+  - [x] external-dns
   - [ ] Longhorn (homelab only)
 
 #### Platform features
@@ -119,9 +119,6 @@ See https://platformengineering.org/platform-tooling
   - AWS VPC CNI
   - Spot Instances (simulated base)
   - EKS Fargate profiles (simulate scaling)
-- [ ] Networking:
-  - [ ] external-dns
-  - [ ] cert-manager
 
 #### Platform features
 
