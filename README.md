@@ -97,12 +97,12 @@ See https://platformengineering.org/platform-tooling
 - [ ] Security:
   - [ ] Trivy in CI
   - [x] Kyverno
-- [ ] Migrate existing tools from Flux CD config
+- [x] Migrate existing tools from Flux CD config
   - [x] Gateway API CRDs
   - [x] Cilium configuration
   - [x] cert-manager
   - [x] external-dns
-  - [ ] Longhorn (homelab only)
+  - [x] Longhorn (homelab only)
 
 #### Platform features
 

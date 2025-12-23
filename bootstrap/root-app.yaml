@@ -16,6 +16,8 @@ spec:
       parameters:
         - name: environment
           value: homelab
+        - name: longhorn.enabled
+          value: "true"
 
   destination:
     server: https://kubernetes.default.svc

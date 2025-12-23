@@ -1,0 +1,5 @@
+longhorn:
+  defaultSettings:
+    defaultDataPath: "/var/mnt/longhorn-storage"
+    defaultReplicaCount: 2
+    replicaAutoBalance: "least-effort"
