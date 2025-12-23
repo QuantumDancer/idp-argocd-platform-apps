@@ -1,0 +1,16 @@
+bgp:
+  enabled: true
+  clusterConfiguration:
+    environment: prod
+    name:  talos
+    zone: proxmox-01
+  localASN: 64513
+  peerASN: 64512
+  peerAddress: 192.168.30.1
+
+lbPool:
+  enabled: true
+  startIP: 192.168.31.10
+  stopIP: 192.168.31.250
+
+gatewayExternalIP: 192.168.31.10

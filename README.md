@@ -99,7 +99,7 @@ See https://platformengineering.org/platform-tooling
   - [x] Kyverno
 - [ ] Migrate existing tools from Flux CD config
   - [x] Gateway API CRDs
-  - [ ] Cilium configuration
+  - [x] Cilium configuration
   - [x] cert-manager
   - [ ] external-dns
   - [ ] Longhorn (homelab only)

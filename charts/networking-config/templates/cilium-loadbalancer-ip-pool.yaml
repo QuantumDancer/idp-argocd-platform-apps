@@ -1,0 +1,11 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/cilium.io/ciliumloadbalancerippool_v2alpha1.json
+{{- if .Values.lbPool.enabled }}
+apiVersion: "cilium.io/v2alpha1"
+kind: CiliumLoadBalancerIPPool
+metadata:
+  name: "lb-pool"
+spec:
+  blocks:
+    - start: {{ .Values.lbPool.startIP }}
+      stop: {{ .Values.lbPool.stopIP }}
+{{- end }}

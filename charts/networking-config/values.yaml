@@ -1,0 +1,18 @@
+# Cilium BGP Configuration
+bgp:
+  enabled: false
+  clusterConfiguration:
+    environment:
+    name:
+    zone:
+  localASN:
+  peerASN:
+  peerAddress:
+
+# Cilium LoadBalancer Configuration
+lbPool:
+  enabled: false
+  startIP:
+  stopIP:
+
+gatewayExternalIP:
