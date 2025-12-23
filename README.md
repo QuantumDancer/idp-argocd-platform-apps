@@ -98,7 +98,7 @@ See https://platformengineering.org/platform-tooling
   - [ ] Trivy in CI
   - [x] Kyverno
 - [ ] Migrate existing tools from Flux CD config
-  - [ ] Gateway API CRDs
+  - [x] Gateway API CRDs
   - [ ] Cilium configuration
   - [x] cert-manager
   - [ ] external-dns
