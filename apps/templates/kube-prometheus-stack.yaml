@@ -10,8 +10,8 @@ spec:
   project: default
 
   source:
-    repoURL: https://gitlab.home.rottlr.de/idp/platform/idp-argocd-platform-apps.git
-    targetRevision: main
+    repoURL: {{ include "platform-apps.repoURL" . }}
+    targetRevision: {{ include "platform-apps.targetRevision" . }}
     path: charts/kube-prometheus-stack
     helm:
       releaseName: kube-prometheus-stack

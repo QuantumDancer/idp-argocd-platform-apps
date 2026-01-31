@@ -1,4 +1,2 @@
-# Homelab environment-specific configuration for argocd-config
-
 argocd:
   hostname: argocd.k8s.home.rottlr.de

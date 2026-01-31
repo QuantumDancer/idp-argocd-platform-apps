@@ -1,0 +1,7 @@
+vault:
+  server: "https://vault.dev.idp.rottlr.de"
+  auth:
+    kubernetes:
+      audiences:
+        - "vault"
+    createResources: false

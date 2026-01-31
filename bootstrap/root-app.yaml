@@ -9,7 +9,7 @@ spec:
 
   source:
     repoURL: https://gitlab.home.rottlr.de/idp/platform/idp-argocd-platform-apps.git
-    targetRevision: main
+    targetRevision: development
     path: apps
     helm:
       releaseName: platform-apps
@@ -17,6 +17,10 @@ spec:
         - name: environment
           value: homelab
         - name: longhorn.enabled
+          value: "true"
+        - name: networkingConfig.enabled
+          value: "true"
+        - name: gatewayApiCrds.enabled
           value: "true"
 
   destination:

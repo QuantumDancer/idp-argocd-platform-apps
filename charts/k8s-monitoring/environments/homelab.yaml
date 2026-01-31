@@ -1,5 +1,3 @@
-# Homelab environment-specific configuration for k8s-monitoring
-
 k8s-monitoring:
   cluster:
     name: home

@@ -7,6 +7,10 @@ vault:
     kubernetes:
       mountPath: "kubernetes"
       role: "external-secrets-operator"
+      audiences: []
+    # Create vault-auth SA and auth-delegator ClusterRoleBinding via Helm.
+    # Set to false when Terraform manages these resources (e.g. dev, prod).
+    createResources: true
 
 # Values for external-secrets subchart
 external-secrets:

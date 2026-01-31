@@ -8,7 +8,7 @@ external-dns:
       valueFrom:
         secretKeyRef:
           name: cloudflare-api-token
-          key: apiToken
+          key: api-token
   # Resource optimization based on KRR recommendations
   resources:
     requests:

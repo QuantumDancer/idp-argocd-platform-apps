@@ -1,9 +1,7 @@
 gateway:
-  name: external
-  namespace: gateway
   hostnames:
-    prometheus: prometheus.k8s.home.rottlr.de
-    alertmanager: alertmanager.k8s.home.rottlr.de
+    prometheus: prometheus.dev.idp.rottlr.de
+    alertmanager: alertmanager.dev.idp.rottlr.de
 
 kube-prometheus-stack:
   prometheus:

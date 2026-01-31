@@ -7,3 +7,7 @@ environment: homelab
 # Applications
 longhorn:
   enabled: false
+networkingConfig:
+  enabled: false
+gatewayApiCrds:
+  enabled: false

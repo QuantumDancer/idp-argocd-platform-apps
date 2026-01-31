@@ -1,5 +1,3 @@
-# Homelab environment-specific configuration for grafana
-
 grafana:
   hostname: grafana.k8s.home.rottlr.de
 
