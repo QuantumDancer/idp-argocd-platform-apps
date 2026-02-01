@@ -6,6 +6,8 @@ metadata:
   namespace: argocd
   annotations:
     argocd.argoproj.io/sync-wave: "2" # requires cloudnative-pg
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
 spec:
   project: default
 

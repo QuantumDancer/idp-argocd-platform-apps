@@ -6,6 +6,8 @@ metadata:
   namespace: argocd
   annotations:
     argocd.argoproj.io/sync-wave: "1" # Requires PodMonitor CRD and external-secrets-operator app
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
 spec:
   project: default
 

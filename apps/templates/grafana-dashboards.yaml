@@ -6,6 +6,8 @@ metadata:
   namespace: argocd
   annotations:
     argocd.argoproj.io/sync-wave: "4" # Requires grafana and kube-prometheus-stack
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
 spec:
   project: default
 
