@@ -15,6 +15,18 @@ spec:
     path: charts/loki
     helm:
       releaseName: loki
+      valueFiles:
+        - values.yaml
+        - environments/{{ .Values.environment }}.yaml
+      {{- if ne .Values.environment "homelab" }}
+      parameters:
+        - name: loki.loki.storage.s3.region
+          value: {{ .Values.awsRegion | quote }}
+        - name: loki.loki.storage.bucketNames.chunks
+          value: {{ .Values.lokiStorageBucketNameChunks | quote }}
+        - name: loki.loki.storage.bucketNames.ruler
+          value: {{ .Values.lokiStorageBucketNameRuler | quote }}
+      {{- end }}
 
   destination:
     server: https://kubernetes.default.svc
