@@ -1,0 +1,21 @@
+kyverno:
+  admissionController:
+    replicas: 2
+    podDisruptionBudget:
+      enabled: true
+      minAvailable: 1
+  backgroundController:
+    replicas: 2
+    podDisruptionBudget:
+      enabled: true
+      minAvailable: 1
+  cleanupController:
+    replicas: 2
+    podDisruptionBudget:
+      enabled: true
+      minAvailable: 1
+  reportsController:
+    replicas: 2
+    podDisruptionBudget:
+      enabled: true
+      minAvailable: 1

@@ -17,6 +17,9 @@ spec:
     path: charts/cloudnative-pg
     helm:
       releaseName: cnpg
+      valueFiles:
+        - values.yaml
+        - environments/{{ .Values.environment }}.yaml
 
   destination:
     server: https://kubernetes.default.svc

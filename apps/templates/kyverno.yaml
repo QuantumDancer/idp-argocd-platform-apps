@@ -22,6 +22,9 @@ spec:
       values: |
         webhookLabels:
           app.kubernetes.io/managed-by: argocd
+      valueFiles:
+        - values.yaml
+        - environments/{{ .Values.environment }}.yaml
 
   destination:
     server: https://kubernetes.default.svc

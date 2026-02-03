@@ -4,28 +4,10 @@ gateway:
     alertmanager: alertmanager.dev.idp.rottlr.de
 
 kube-prometheus-stack:
+  # NOTE: Prometheus does not support horizontal scaling. Either enable Thanos or directly switch to Mimir for EKS clusters.
   prometheus:
-    prometheusSpec:
-      resources:
-        requests:
-          memory: "1Gi"
-          cpu: "500m"
-        limits:
-          memory: "2Gi"
-      retention: 7d
-      storageSpec:
-        volumeClaimTemplate:
-          spec:
-            resources:
-              requests:
-                storage: 20Gi
+    replicas: 1
 
   alertmanager:
     alertmanagerSpec:
-      resources:
-        requests:
-          memory: "128Mi"
-          cpu: "50m"
-        limits:
-          memory: "256Mi"
-      retention: 168h
+      replicas: 2

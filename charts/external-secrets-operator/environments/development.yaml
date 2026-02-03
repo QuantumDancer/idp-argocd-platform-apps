@@ -5,3 +5,16 @@ vault:
       audiences:
         - "vault"
     createResources: false
+
+external-secrets:
+  replicaCount: 2
+  podDisruptionBudget:
+    enabled: true
+  webhook:
+    replicaCount: 2
+    podDisruptionBudget:
+      enabled: true
+  certController:
+    replicaCount: 2
+    podDisruptionBudget:
+      enabled: true

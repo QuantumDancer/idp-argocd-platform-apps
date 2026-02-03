@@ -1,0 +1,6 @@
+grafana:
+  hostname: grafana.k8s.home.rottlr.de
+
+gateway:
+  name: external
+  namespace: gateway

@@ -1,0 +1,4 @@
+crossplane:
+  replicas: 2
+  rbacManager:
+    replicas: 2
