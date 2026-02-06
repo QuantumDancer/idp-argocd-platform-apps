@@ -17,6 +17,9 @@ spec:
     path: charts/grafana-database
     helm:
       releaseName: grafana-database
+      valueFiles:
+        - values.yaml
+        - environments/{{ .Values.environment }}.yaml
 
   destination:
     server: https://kubernetes.default.svc
