@@ -2,10 +2,10 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: grafana
+  name: grafana-operator
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "3" # Requires grafana-operator and grafana-database
+    argocd.argoproj.io/sync-wave: "2"
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
@@ -14,16 +14,16 @@ spec:
   source:
     repoURL: {{ include "platform-apps.repoURL" . }}
     targetRevision: {{ include "platform-apps.targetRevision" . }}
-    path: charts/grafana
+    path: "charts/grafana-operator"
     helm:
-      releaseName: grafana
+      releaseName: grafana-operator
       valueFiles:
         - values.yaml
         - environments/{{ .Values.environment }}.yaml
 
   destination:
     server: https://kubernetes.default.svc
-    namespace: grafana
+    namespace: grafana-operator
 
   syncPolicy:
     automated:

@@ -1,5 +1,2 @@
 grafana:
   hostname: grafana.dev.idp.rottlr.de
-
-grafana-operator:
-  replicas: 2
