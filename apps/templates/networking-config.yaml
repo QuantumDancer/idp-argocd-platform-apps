@@ -6,7 +6,7 @@ metadata:
   name: networking-config
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "0"
+    argocd.argoproj.io/sync-wave: "1" # Requires external-secrets-operator and gateway-api-crds
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:

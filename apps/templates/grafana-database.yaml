@@ -5,7 +5,7 @@ metadata:
   name: grafana-database
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "2" # requires cloudnative-pg
+    argocd.argoproj.io/sync-wave: "3" # Requires cloudnative-pg
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:

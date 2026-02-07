@@ -22,10 +22,53 @@ The repository uses a three-tier architecture:
 3. **Application layer** (`apps/`): ArgoCD Application manifests that deploy platform components
 
 **Sync Waves**:
-Applications use `argocd.argoproj.io/sync-wave` annotations to control deployment order:
+Applications use `argocd.argoproj.io/sync-wave` annotations to control deployment order.
+A lower wave syncs and becomes healthy before higher waves start. Apps at the same wave have no ordering guarantee.
 
-- Wave 0: Infrastructure components (external-secrets-operator)
-- Wave 1: Configuration (argocd-config with Gateway API routes)
+```
+Wave -1: gateway-api-crds                    (CRDs only, no deps)
+Wave  0: external-secrets-operator, kyverno,  (no in-repo CRD deps)
+         loki, longhorn
+Wave  1: networking-config, argocd-config,    (depend on wave -1/0 CRDs)
+         crossplane, kube-prometheus-stack,
+         grafana-operator
+Wave  2: cert-manager, cloudnative-pg,        (depend on wave 1 CRDs)
+         k8s-monitoring, platform-resources,
+         external-dns
+Wave  3: grafana-database                     (depends on cloudnative-pg)
+Wave  4: grafana                              (depends on grafana-operator + grafana-database)
+Wave  5: grafana-dashboards                   (depends on grafana + kube-prometheus-stack)
+```
+
+**CRD Dependency Graph** (provider → consumer):
+
+```
+gateway-api-crds ──┬──> networking-config (Gateway)
+                   ├──> longhorn (HTTPRoute)
+                   ├──> argocd-config (HTTPRoute, GRPCRoute)
+                   ├──> kube-prometheus-stack (HTTPRoute)
+                   └──> grafana (HTTPRoute)
+
+external-secrets-operator ──┬──> networking-config (ExternalSecret, when bgp.enabled)
+                            ├──> cert-manager (ExternalSecret)
+                            ├──> external-dns (ExternalSecret)
+                            ├──> grafana (ExternalSecret)
+                            └──> grafana-database (ExternalSecret)
+
+kube-prometheus-stack ──┬──> cert-manager (PodMonitor)
+                        ├──> cloudnative-pg (PodMonitor)
+                        ├──> k8s-monitoring (ServiceMonitor/PodMonitor/PrometheusRule)
+                        └──> grafana-dashboards (PrometheusRule)
+
+grafana-operator ──┬──> cloudnative-pg (GrafanaDashboard)
+                   ├──> grafana (Grafana, GrafanaDatasource)
+                   └──> grafana-dashboards (GrafanaDashboard)
+
+crossplane ──> platform-resources (XRD, Composition)
+cloudnative-pg ──> grafana-database (CNPG Cluster)
+grafana-database ──> grafana (runtime dependency)
+grafana ──> grafana-dashboards (dashboard instance selector)
+```
 
 **Chart Structure**:
 
@@ -203,7 +246,7 @@ After editing, run `make all` to regenerate artifacts.
 
 **Deploying via ArgoCD**:
 
-Compiled artifacts are automatically deployed via the `grafana-dashboards` ArgoCD Application (sync wave 4):
+Compiled artifacts are automatically deployed via the `grafana-dashboards` ArgoCD Application (sync wave 5):
 
 - Dashboards → ConfigMaps → GrafanaDashboard CRs (Grafana Operator provisions them)
 - Rules/Alerts → PrometheusRule CRs (Prometheus Operator loads them)

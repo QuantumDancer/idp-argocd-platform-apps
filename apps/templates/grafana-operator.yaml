@@ -5,7 +5,7 @@ metadata:
   name: grafana-operator
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "2"
+    argocd.argoproj.io/sync-wave: "1" # CRD provider for Grafana resources
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:

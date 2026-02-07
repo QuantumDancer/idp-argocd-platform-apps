@@ -5,7 +5,7 @@ metadata:
   name: grafana
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "3" # Requires grafana-operator and grafana-database
+    argocd.argoproj.io/sync-wave: "4" # Requires grafana-operator and grafana-database
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:

@@ -5,7 +5,7 @@ metadata:
   name: cloudnative-pg
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "1" # Requires Prometheus CRDs
+    argocd.argoproj.io/sync-wave: "2" # Requires kube-prometheus-stack and grafana-operator CRDs
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:

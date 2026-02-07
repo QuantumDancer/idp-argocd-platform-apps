@@ -5,7 +5,7 @@ metadata:
   name: cert-manager
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "1" # Requires PodMonitor CRD and external-secrets-operator app
+    argocd.argoproj.io/sync-wave: "2" # Requires PodMonitor CRD and external-secrets-operator app
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:

@@ -5,7 +5,7 @@ metadata:
   name: platform-resources
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "1"
+    argocd.argoproj.io/sync-wave: "2" # Requires crossplane CRDs
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
