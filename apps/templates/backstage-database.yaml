@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/argoproj.io/application_v1alpha1.json
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: backstage-database
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "3" # Requires cloudnative-pg
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+
+  source:
+    repoURL: {{ include "platform-apps.repoURL" . }}
+    targetRevision: {{ include "platform-apps.targetRevision" . }}
+    path: charts/backstage-database
+    helm:
+      releaseName: backstage-database
+      valueFiles:
+        - values.yaml
+        - environments/{{ .Values.environment }}.yaml
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: backstage-database
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

@@ -1,2 +1,4 @@
 argocd:
   hostname: argocd.k8s.home.rottlr.de
+
+additionalRepoSecrets: true

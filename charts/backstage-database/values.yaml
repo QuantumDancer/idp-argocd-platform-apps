@@ -1,0 +1,27 @@
+cluster:
+  type: postgresql
+  mode: standalone
+  version:
+    postgresql: "16"
+  cluster:
+    instances: 3
+    storage:
+      size: 2Gi
+    monitoring:
+      enabled: true
+      podMonitor:
+        enabled: true
+    roles:
+      - name: backstage
+        ensure: present
+        login: true
+        createdb: true
+        passwordSecret:
+          name: backstage-database-credentials
+    initdb:
+      database: backstage
+      owner: backstage
+      secret:
+        name: backstage-database-credentials
+  backups:
+    enabled: false
