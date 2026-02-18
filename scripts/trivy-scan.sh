@@ -26,36 +26,77 @@ for chart in charts/*/Chart.yaml; do
     continue
   fi
 
-  echo "Scanning $chart_name..."
+  # When environment-specific values exist under environments/, scan once per environment
+  # so that CI validates each real deployment configuration. Without this, charts that rely
+  # on environment overrides might fail to render from base values alone.
+  env_dir="$chart_dir/environments"
+  render_failed=false
 
-  # Scan Chart.yaml and dependencies for issues
-  # Capture output to check for rendering errors
-  trivy config "$chart_dir" \
-    --severity HIGH,CRITICAL \
-    --exit-code 0 \
-    --format json \
-    --output "reports/$chart_name-trivy.json" 2>&1 | tee "/tmp/trivy-$chart_name.log"
+  if [ -d "$env_dir" ] && ls "$env_dir"/*.yaml 1>/dev/null 2>&1; then
+    for env_file in "$env_dir"/*.yaml; do
+      env_name=$(basename "$env_file" .yaml)
+      output_file="reports/$chart_name-$env_name-trivy.json"
+      log_file="/tmp/trivy-$chart_name-$env_name.log"
 
-  TRIVY_EXIT=$?
+      echo "Scanning $chart_name (env: $env_name)..."
+      trivy config "$chart_dir" \
+        --helm-values "$chart_dir/values.yaml" \
+        --helm-values "$env_file" \
+        --severity HIGH,CRITICAL \
+        --exit-code 0 \
+        --format json \
+        --output "$output_file" 2>&1 | tee "$log_file"
 
-  # Check for rendering errors in the output
-  if [ $TRIVY_EXIT -ne 0 ] || grep -q "Failed to render Chart files" "/tmp/trivy-$chart_name.log"; then
-    echo "❌ ERROR: Failed to render Helm chart for $chart_name"
-    RENDER_FAILED=1
-    FAILED_CHARTS+=("$chart_name")
-    continue
+      if [ ${PIPESTATUS[0]} -ne 0 ] || grep -q "Failed to render Chart files" "$log_file"; then
+        echo "❌ ERROR: Failed to render Helm chart for $chart_name (env: $env_name)"
+        RENDER_FAILED=1
+        FAILED_CHARTS+=("$chart_name/$env_name")
+        render_failed=true
+        continue
+      fi
+
+      if [ -f "$output_file" ]; then
+        VULN_COUNT=$(jq '[.Results[]?.Misconfigurations[]? | select(.Severity == "HIGH" or .Severity == "CRITICAL")] | length' "$output_file" 2>/dev/null || echo "0")
+        if [ "$VULN_COUNT" -gt 0 ]; then
+          echo "⚠️  Found $VULN_COUNT HIGH/CRITICAL vulnerabilities in $chart_name (env: $env_name)"
+          VULNERABILITIES_FOUND=1
+          VULNERABLE_CHARTS+=("$chart_name/$env_name ($VULN_COUNT issues)")
+        else
+          echo "✅ No HIGH/CRITICAL vulnerabilities in $chart_name (env: $env_name)"
+        fi
+      fi
+    done
+  else
+    output_file="reports/$chart_name-trivy.json"
+    log_file="/tmp/trivy-$chart_name.log"
+
+    echo "Scanning $chart_name..."
+    trivy config "$chart_dir" \
+      --helm-values "$chart_dir/values.yaml" \
+      --severity HIGH,CRITICAL \
+      --exit-code 0 \
+      --format json \
+      --output "$output_file" 2>&1 | tee "$log_file"
+
+    if [ ${PIPESTATUS[0]} -ne 0 ] || grep -q "Failed to render Chart files" "$log_file"; then
+      echo "❌ ERROR: Failed to render Helm chart for $chart_name"
+      RENDER_FAILED=1
+      FAILED_CHARTS+=("$chart_name")
+      render_failed=true
+    elif [ -f "$output_file" ]; then
+      VULN_COUNT=$(jq '[.Results[]?.Misconfigurations[]? | select(.Severity == "HIGH" or .Severity == "CRITICAL")] | length' "$output_file" 2>/dev/null || echo "0")
+      if [ "$VULN_COUNT" -gt 0 ]; then
+        echo "⚠️  Found $VULN_COUNT HIGH/CRITICAL vulnerabilities in $chart_name"
+        VULNERABILITIES_FOUND=1
+        VULNERABLE_CHARTS+=("$chart_name ($VULN_COUNT issues)")
+      else
+        echo "✅ No HIGH/CRITICAL vulnerabilities in $chart_name"
+      fi
+    fi
   fi
 
-  # Check if vulnerabilities were found in the JSON report
-  if [ -f "reports/$chart_name-trivy.json" ]; then
-    VULN_COUNT=$(jq '[.Results[]?.Misconfigurations[]? | select(.Severity == "HIGH" or .Severity == "CRITICAL")] | length' "reports/$chart_name-trivy.json" 2>/dev/null || echo "0")
-    if [ "$VULN_COUNT" -gt 0 ]; then
-      echo "⚠️  Found $VULN_COUNT HIGH/CRITICAL vulnerabilities in $chart_name"
-      VULNERABILITIES_FOUND=1
-      VULNERABLE_CHARTS+=("$chart_name ($VULN_COUNT issues)")
-    else
-      echo "✅ No HIGH/CRITICAL vulnerabilities in $chart_name"
-    fi
+  if $render_failed; then
+    continue
   fi
 done
 
