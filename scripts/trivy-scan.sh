@@ -39,13 +39,21 @@ for chart in charts/*/Chart.yaml; do
       log_file="/tmp/trivy-$chart_name-$env_name.log"
 
       echo "Scanning $chart_name (env: $env_name)..."
-      trivy config "$chart_dir" \
+      # trivy-overrides.yaml provides scan-only values (e.g. to work around trivy's
+      # Helm renderer not populating .Release.Namespace). It has no effect on deployments.
+      trivy_overrides=()
+      if [ -f "$chart_dir/trivy-overrides.yaml" ]; then
+        trivy_overrides=(--helm-values "$chart_dir/trivy-overrides.yaml")
+      fi
+      trivy config \
         --helm-values "$chart_dir/values.yaml" \
         --helm-values "$env_file" \
+        "${trivy_overrides[@]}" \
         --severity HIGH,CRITICAL \
         --exit-code 0 \
         --format json \
-        --output "$output_file" 2>&1 | tee "$log_file"
+        --output "$output_file" \
+        "$chart_dir" 2>&1 | tee "$log_file"
 
       if [ ${PIPESTATUS[0]} -ne 0 ] || grep -q "Failed to render Chart files" "$log_file"; then
         echo "❌ ERROR: Failed to render Helm chart for $chart_name (env: $env_name)"
@@ -71,12 +79,18 @@ for chart in charts/*/Chart.yaml; do
     log_file="/tmp/trivy-$chart_name.log"
 
     echo "Scanning $chart_name..."
-    trivy config "$chart_dir" \
+    trivy_overrides=()
+    if [ -f "$chart_dir/trivy-overrides.yaml" ]; then
+      trivy_overrides=(--helm-values "$chart_dir/trivy-overrides.yaml")
+    fi
+    trivy config \
       --helm-values "$chart_dir/values.yaml" \
+      "${trivy_overrides[@]}" \
       --severity HIGH,CRITICAL \
       --exit-code 0 \
       --format json \
-      --output "$output_file" 2>&1 | tee "$log_file"
+      --output "$output_file" \
+      "$chart_dir" 2>&1 | tee "$log_file"
 
     if [ ${PIPESTATUS[0]} -ne 0 ] || grep -q "Failed to render Chart files" "$log_file"; then
       echo "❌ ERROR: Failed to render Helm chart for $chart_name"

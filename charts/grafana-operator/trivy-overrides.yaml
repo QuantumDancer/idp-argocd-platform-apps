@@ -1,0 +1,9 @@
+# Trivy scan-only overrides. These values are NOT used in deployments.
+#
+# trivy's Helm renderer does not populate .Release.Namespace, causing the upstream
+# subchart's rbac.yaml to fail at:
+#   coalesce .Values.watchNamespaces .Values.namespaceOverride .Release.Namespace | splitList ","
+# Setting watchNamespaces here gives coalesce a concrete string before it falls
+# through to the nil .Release.Namespace.
+grafana-operator:
+  watchNamespaces: "trivy-scan"
