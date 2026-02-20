@@ -25,3 +25,6 @@ cluster:
         name: backstage-database-credentials
   backups:
     enabled: false
+
+# Set in ../../apps/templates/argocd-config.yaml
+environment: ""

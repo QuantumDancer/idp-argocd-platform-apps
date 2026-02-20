@@ -21,6 +21,9 @@ controller:
           targetLabel: namespace
 
 configs:
+  secret:
+    extra:
+      webhook.gitlab.secret: "$argocd-gitlab-webhook-secret:webhook.gitlab.secret"
   params:
     # Allow insecure connections since TLS is terminated at the Gateway
     server.insecure: true
