@@ -1,6 +1,6 @@
 dependencies:
 - name: crossplane
   repository: https://charts.crossplane.io/stable
-  version: 2.1.3
-digest: sha256:21d14ccf2dc576915b9dd5aad491abf324254d88487fe0ee7eb4e09160c2038b
-generated: "2025-12-07T15:16:05.78968801Z"
+  version: 2.2.0
+digest: sha256:7605113d7935c745bea66fd46b54ce740d74d36cdebd72f3ec41e36a18ff38f5
+generated: "2026-02-21T17:17:27.567095666Z"
