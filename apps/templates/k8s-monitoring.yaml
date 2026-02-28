@@ -8,6 +8,8 @@ metadata:
     argocd.argoproj.io/sync-wave: "2" # Requires kube-prometheus-stack CRDs
   finalizers:
     - resources-finalizer.argocd.argoproj.io
+    - pre-delete-finalizer.argocd.argoproj.io
+    - pre-delete-finalizer.argocd.argoproj.io/cleanup
 spec:
   project: default
 
