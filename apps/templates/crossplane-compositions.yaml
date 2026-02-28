@@ -1,0 +1,32 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: crossplane-compositions
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "2" # Requires crossplane CRDs
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+
+  source:
+    repoURL: {{ include "crossplane-compositions.repoURL" . }}
+    targetRevision: {{ include "crossplane-compositions.targetRevision" . }}
+    path: ./
+    helm:
+      releaseName: crossplane-compositions
+      valueFiles:
+        - values.yaml
+        - environments/{{ .Values.environment }}.yaml
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: crossplane-compositions
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

@@ -1,7 +1,0 @@
-# yaml-language-server: $schema=https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/pkg.crossplane.io/function_v1.json
-apiVersion: pkg.crossplane.io/v1
-kind: Function
-metadata:
-  name: crossplane-contrib-function-python
-spec:
-  package: xpkg.crossplane.io/crossplane-contrib/function-python:v0.2.0
