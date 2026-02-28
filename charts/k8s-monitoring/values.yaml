@@ -35,9 +35,14 @@ k8s-monitoring:
       enabled: false
       deploy: false
 
-  # Enable Prometheus Operator Objects (ServiceMonitors, PodMonitors, Probes)
+  # Enables Alloy to discover and scrape ServiceMonitors, PodMonitors, and Probes.
+  # Without this, no metrics from Prometheus Operator objects are collected.
   prometheusOperatorObjects:
     enabled: true
+    crds:
+      # kube-prometheus-stack (wave 1) owns these CRDs; disable here to avoid
+      # ArgoCD sync conflicts from the two releases fighting over CRD versions
+      deploy: false
 
   # Enable cluster events collection
   clusterEvents:
