@@ -11,7 +11,7 @@ metadata:
     - pre-delete-finalizer.argocd.argoproj.io
     - pre-delete-finalizer.argocd.argoproj.io/cleanup
 spec:
-  project: default
+  project: platform
 
   source:
     repoURL: {{ include "platform-apps.repoURL" . }}
