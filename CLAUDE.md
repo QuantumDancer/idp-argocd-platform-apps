@@ -14,13 +14,6 @@ This repository contains an ArgoCD-based platform using the App-of-Apps pattern 
 
 ## Architecture
 
-**Bootstrap Pattern**:
-The repository uses a three-tier architecture:
-
-1. **Bootstrap layer** (`bootstrap/`): Manually deployed ArgoCD installation with initial configuration
-2. **Root App** (`bootstrap/root-app.yaml`): App-of-Apps that watches the `apps/` directory
-3. **Application layer** (`apps/`): ArgoCD Application manifests that deploy platform components
-
 **Sync Waves**:
 Applications use `argocd.argoproj.io/sync-wave` annotations to control deployment order.
 A lower wave syncs and becomes healthy before higher waves start. Apps at the same wave have no ordering guarantee.
@@ -78,13 +71,6 @@ grafana ──> grafana-dashboards (dashboard instance selector)
 
 ## Key Commands
 
-**Bootstrap the cluster**:
-
-```bash
-# First, create bootstrap/repo.yaml with GitLab deploy token credentials
-./bootstrap/bootstrap.sh
-```
-
 **Update Helm chart dependencies**:
 
 ```bash
@@ -122,7 +108,6 @@ kubectl apply --dry-run=server -f <file>
 
 **GitLab Repository**:
 
-- Repository credentials stored in `bootstrap/repo.yaml` (gitignored)
 - Uses GitLab Deploy Tokens for authentication
 - Repository URL: https://gitlab.home.rottlr.de/idp/platform/idp-argocd-platform-apps.git
 
@@ -321,5 +306,4 @@ EOF
 
 **Ignored Files**:
 
-- `bootstrap/repo.yaml`: Contains GitLab deploy token credentials
 - `charts/*/charts/*.tgz`: Downloaded Helm chart dependencies
