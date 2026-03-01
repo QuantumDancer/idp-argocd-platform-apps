@@ -45,3 +45,19 @@ development
 main
 {{- end -}}
 {{- end -}}
+
+{{- define "user-apps.repoURL" -}}
+{{- if eq .Values.environment "homelab" -}}
+https://gitlab.home.rottlr.de/idp/platform/idp-argocd-user-apps.git
+{{- else -}}
+https://github.com/QuantumDancer/idp-argocd-user-apps.git
+{{- end -}}
+{{- end -}}
+
+{{- define "user-apps.targetRevision" -}}
+{{- if or (eq .Values.environment "homelab") (eq .Values.environment "development") -}}
+development
+{{- else -}}
+main
+{{- end -}}
+{{- end -}}

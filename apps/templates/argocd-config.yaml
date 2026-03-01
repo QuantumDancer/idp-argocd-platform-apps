@@ -23,6 +23,12 @@ spec:
       parameters:
         - name: environment
           value: {{ .Values.environment | quote }}
+        - name: backstage.repoURL
+          value: {{ include "backstage.repoURL" . | quote }}
+        - name: crossplaneCompositions.repoURL
+          value: {{ include "crossplane-compositions.repoURL" . | quote }}
+        - name: userApps.repoURL
+          value: {{ include "user-apps.repoURL" . | quote }}
 
   destination:
     server: https://kubernetes.default.svc
