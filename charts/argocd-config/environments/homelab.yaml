@@ -2,3 +2,12 @@ argocd:
   hostname: argocd.k8s.home.rottlr.de
 
 additionalRepoSecrets: true
+
+userApps:
+  repoURL: https://gitlab.home.rottlr.de/idp/platform/idp-argocd-user-apps.git
+
+backstage:
+  repoURL: https://gitlab.home.rottlr.de/idp/platform/idp-portal-deployment.git
+
+crossplaneCompositions:
+  repoURL: https://gitlab.home.rottlr.de/idp/platform/idp-crossplane-compositions.git
