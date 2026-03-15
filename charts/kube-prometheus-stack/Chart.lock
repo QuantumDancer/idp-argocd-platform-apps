@@ -1,6 +1,6 @@
 dependencies:
 - name: kube-prometheus-stack
   repository: oci://ghcr.io/prometheus-community/charts
-  version: 80.14.4
-digest: sha256:897b8e60383315709b91186f773c6dd0f0bb3181ce8aa70abee16215ff5144df
-generated: "2026-02-21T17:18:53.62094254Z"
+  version: 82.10.4
+digest: sha256:82b4199565dbca445ea6c7bdf9356ccc1db4104ec4c857ca629c3a1ca177a9d2
+generated: "2026-03-15T11:03:54.344614087Z"
