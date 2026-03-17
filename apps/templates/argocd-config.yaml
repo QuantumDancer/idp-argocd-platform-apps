@@ -12,8 +12,8 @@ spec:
   project: platform
 
   source:
-    repoURL: {{ include "platform-apps.repoURL" . }}
-    targetRevision: {{ include "platform-apps.targetRevision" . }}
+    repoURL: {{ .Values.repos.platformApps.repoURL }}
+    targetRevision: {{ .Values.repos.platformApps.targetRevision }}
     path: charts/argocd-config
     helm:
       releaseName: argocd-config
@@ -24,11 +24,11 @@ spec:
         - name: environment
           value: {{ .Values.environment | quote }}
         - name: backstage.repoURL
-          value: {{ include "backstage.repoURL" . | quote }}
+          value: {{ .Values.repos.backstage.repoURL | quote }}
         - name: crossplaneCompositions.repoURL
-          value: {{ include "crossplane-compositions.repoURL" . | quote }}
+          value: {{ .Values.repos.crossplaneCompositions.repoURL | quote }}
         - name: userApps.repoURL
-          value: {{ include "user-apps.repoURL" . | quote }}
+          value: {{ .Values.repos.userApps.repoURL | quote }}
 
   destination:
     server: https://kubernetes.default.svc

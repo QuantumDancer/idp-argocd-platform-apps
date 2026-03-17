@@ -1,0 +1,12 @@
+environment: homelab
+
+repos:
+  platformApps:
+    targetRevision: development
+  backstage:
+    targetRevision: development
+  crossplaneCompositions:
+    targetRevision: development
+  userApps:
+    targetRevision: development
+

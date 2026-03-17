@@ -1,8 +1,23 @@
 # Default values for platform-apps Helm chart
 # This file provides default configuration that can be overridden
 
-# Environment name
-environment: homelab
+# Environment name (used for environment-specific valueFiles paths, set in ./environments/<environment>.yaml)
+environment: ""
+
+# Repository configuration
+repos:
+  platformApps:
+    repoURL: https://gitlab.home.rottlr.de/idp/platform/idp-argocd-platform-apps.git
+    targetRevision: main
+  backstage:
+    repoURL: https://gitlab.home.rottlr.de/idp/platform/idp-portal-deployment.git
+    targetRevision: main
+  crossplaneCompositions:
+    repoURL: https://gitlab.home.rottlr.de/idp/platform/idp-crossplane-compositions.git
+    targetRevision: main
+  userApps:
+    repoURL: https://gitlab.home.rottlr.de/idp/platform/idp-argocd-user-apps.git
+    targetRevision: main
 
 # AWS / Loki S3 storage (set via Terraform for AWS environments)
 awsRegion: ""

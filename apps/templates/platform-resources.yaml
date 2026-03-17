@@ -12,8 +12,8 @@ spec:
   project: platform
 
   source:
-    repoURL: {{ include "platform-apps.repoURL" . }}
-    targetRevision: {{ include "platform-apps.targetRevision" . }}
+    repoURL: {{ .Values.repos.platformApps.repoURL }}
+    targetRevision: {{ .Values.repos.platformApps.targetRevision }}
     path: charts/platform-resources
     helm:
       releaseName: platform-resources

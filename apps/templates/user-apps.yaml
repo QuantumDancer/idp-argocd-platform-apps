@@ -12,7 +12,7 @@ spec:
   project: platform
 
   source:
-    repoURL: {{ include "user-apps.repoURL" . }}
+    repoURL: {{ .Values.repos.userApps.repoURL }}
     targetRevision: main
     path: ./
     helm:
