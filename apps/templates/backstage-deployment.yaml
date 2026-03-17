@@ -12,8 +12,8 @@ spec:
   project: platform
 
   source:
-    repoURL: {{ include "backstage.repoURL" . }}
-    targetRevision: {{ include "backstage.targetRevision" . }}
+    repoURL: {{ .Values.repos.backstage.repoURL }}
+    targetRevision: {{ .Values.repos.backstage.targetRevision }}
     path: ./
     helm:
       releaseName: backstage

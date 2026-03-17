@@ -10,4 +10,4 @@ argocd:
   servicePort: 80
   namespace: argocd
 
-additionalRepoSecrets: false
+additionalRepoSecrets: true

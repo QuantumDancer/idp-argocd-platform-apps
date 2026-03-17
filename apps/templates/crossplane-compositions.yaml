@@ -11,8 +11,8 @@ spec:
   project: platform
 
   source:
-    repoURL: {{ include "crossplane-compositions.repoURL" . }}
-    targetRevision: {{ include "crossplane-compositions.targetRevision" . }}
+    repoURL: {{ .Values.repos.crossplaneCompositions.repoURL }}
+    targetRevision: {{ .Values.repos.crossplaneCompositions.targetRevision }}
     path: ./
     helm:
       releaseName: crossplane-compositions
