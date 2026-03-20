@@ -1,4 +1,10 @@
 longhorn:
+  # Disable the pre-upgrade checker on fresh installs. The job requires
+  # longhorn-service-account to already exist, which creates a chicken-and-egg
+  # problem when ArgoCD finds a stale Helm release secret and runs pre-upgrade
+  # hooks before any resources have been created.
+  preUpgradeChecker:
+    jobEnabled: false
   defaultSettings:
     defaultDataPath: "/var/mnt/longhorn-storage"
     defaultReplicaCount: 2
