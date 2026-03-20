@@ -1,2 +1,8 @@
 vault:
   server: "https://vault.home.rottlr.de:8200"
+  auth:
+    kubernetes:
+      mountPath: "kubernetes-talos"
+      role: "external-secrets-operator-talos"
+      audiences:
+        - "vault"
