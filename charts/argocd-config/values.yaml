@@ -11,3 +11,10 @@ argocd:
   namespace: argocd
 
 additionalRepoSecrets: true
+
+backstage:
+  repoURL: "" # Set in ../../apps/templates/argocd-config.yaml
+crossplaneCompositions:
+  repoURL: "" # Set in ../../apps/templates/argocd-config.yaml
+userApps:
+  repoURL: "" # Set in ../../apps/templates/argocd-config.yaml
