@@ -1,13 +1,24 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:recommended"],
-  "baseBranchPatterns": ["development"],
-  "assignees": ["benjamin"],
+  "extends": [
+    "config:recommended"
+  ],
+  "baseBranchPatterns": [
+    "development"
+  ],
+  "assignees": [
+    "benjamin"
+  ],
   "packageRules": [
     {
-      "description": "Automerge Helm chart patch updates after 3 days and passing CI",
-      "matchManagers": ["helmv3"],
-      "matchUpdateTypes": ["patch"],
+      "description": "Automerge Helm chart patch and minor updates after 3 days and passing CI",
+      "matchManagers": [
+        "helmv3"
+      ],
+      "matchUpdateTypes": [
+        "patch",
+        "minor"
+      ],
       "automerge": true,
       "automergeType": "pr",
       "platformAutomerge": true,
