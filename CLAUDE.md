@@ -5,6 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Quick instructions
 
 - Use the context7 MCP to search for up-to-date documentation.
+- Use the grafana MCP server to connect to the Grafana instance deployed to this repo (homelab environment), to query metrics and logs from services running inside the cluster.
 - Use rm -f to delete files (on Fedora, rm is aliased : rm='nocorrect rm -i')
 - Do not set limits on cpu, as this is generally not recommended. Only set requests for cpu and memory and limits for memory.
 

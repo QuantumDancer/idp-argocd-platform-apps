@@ -1,0 +1,66 @@
+# ServiceMonitors for ArgoCD metrics collection via Grafana Alloy.
+#
+# Three separate monitors are required because the argocd-overview dashboard
+# (grafana.com/dashboards/14584) uses per-component job labels to distinguish
+# metrics from the application controller, repo server, and API server.
+# Merging them under a single job label would make the per-component panels
+# (memory, goroutines, gRPC rates, etc.) non-functional.
+#
+# Expected job labels after relabeling:
+#   integrations/argocd/application-controller  → argocd-application-controller-metrics (8082)
+#   integrations/argocd/argocd-server           → argocd-server-metrics (8083)
+#   integrations/argocd/repo-server             → argocd-repo-server-metrics (8084)
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: argocd-application-controller-metrics
+  namespace: {{ .Values.argocd.namespace }}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: argocd-metrics
+  endpoints:
+    - port: http-metrics
+      relabelings:
+        - targetLabel: job
+          replacement: integrations/argocd/application-controller
+  namespaceSelector:
+    matchNames:
+      - {{ .Values.argocd.namespace }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: argocd-server-metrics
+  namespace: {{ .Values.argocd.namespace }}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: argocd-server-metrics
+  endpoints:
+    - port: http-metrics
+      relabelings:
+        - targetLabel: job
+          replacement: integrations/argocd/argocd-server
+  namespaceSelector:
+    matchNames:
+      - {{ .Values.argocd.namespace }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: argocd-repo-server-metrics
+  namespace: {{ .Values.argocd.namespace }}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: argocd-repo-server-metrics
+  endpoints:
+    - port: http-metrics
+      relabelings:
+        - targetLabel: job
+          replacement: integrations/argocd/repo-server
+  namespaceSelector:
+    matchNames:
+      - {{ .Values.argocd.namespace }}
