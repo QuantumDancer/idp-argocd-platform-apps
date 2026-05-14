@@ -13,4 +13,7 @@ spec:
     - "{{ .Values.certificate.externalDomain }}"
 {{- if .Values.certificate.includeWildcardCertificate }}
     - "*.{{ .Values.certificate.externalDomain }}"
-{{- end}}
+{{- end }}
+{{- range .Values.certificate.additionalDnsNames }}
+    - {{ . | quote }}
+{{- end }}

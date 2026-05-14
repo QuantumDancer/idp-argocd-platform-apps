@@ -1,2 +1,7 @@
 certificate:
   externalDomain: k8s.home.rottlr.de
+  additionalDnsNames:
+    # Virtual-hosted-style bucket access: <bucket>.s3.garage.k8s.home.rottlr.de
+    # Not covered by *.k8s.home.rottlr.de (wildcards don't span subdomain levels)
+    - "*.s3.garage.k8s.home.rottlr.de"
+    - "*.web.garage.k8s.home.rottlr.de"

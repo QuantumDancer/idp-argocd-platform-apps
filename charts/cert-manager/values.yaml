@@ -33,3 +33,4 @@ clusterIssuer:
 certificate:
   externalDomain: k8s.home.rottlr.de # Overwrite in ./environments/<env>.yaml
   includeWildcardCertificate: true
+  additionalDnsNames: []
