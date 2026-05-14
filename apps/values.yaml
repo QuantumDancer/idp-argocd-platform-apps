@@ -31,3 +31,5 @@ networkingConfig:
   enabled: false
 gatewayApiCrds:
   enabled: false
+garage:
+  enabled: false

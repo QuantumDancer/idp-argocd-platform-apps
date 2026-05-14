@@ -1,0 +1,51 @@
+garage:
+  # Single node is enough for homelab purposes
+  replicationFactor: "1"
+  # Managed by ExternalSecret; prevents the chart's own Secret from being created
+  existingRpcSecret: garage-rpc-secret
+  s3:
+    api:
+      region: "garage"
+      rootDomain: ".s3.garage.k8s.home.rottlr.de"
+    web:
+      rootDomain: ".web.garage.k8s.home.rottlr.de"
+
+deployment:
+  replicaCount: 1
+
+persistence:
+  meta:
+    storageClass: longhorn
+    size: 1Gi
+  data:
+    storageClass: longhorn
+    size: 10Gi
+
+resources:
+  requests:
+    memory: "256Mi"
+    cpu: "100m"
+  limits:
+    memory: "512Mi"
+
+externalSecret:
+  rpcSecret:
+    enabled: true
+
+httproute:
+  s3:
+    api:
+      enabled: true
+      hostname: s3.garage.k8s.home.rottlr.de
+    web:
+      enabled: false
+
+gateway:
+  name: external
+  namespace: gateway
+
+monitoring:
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true

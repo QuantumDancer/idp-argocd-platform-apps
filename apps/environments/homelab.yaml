@@ -10,3 +10,6 @@ repos:
   userApps:
     targetRevision: development
 
+garage:
+  enabled: true
+
