@@ -11,7 +11,7 @@ metadata:
     # GrafanaDashboards can contain inline JSON/Jsonnet or reference ConfigMaps via configMapRef
     dashboards: "grafana"
 spec:
-  version: 12.3.0
+  version: 13.0.1
   config:
     log:
       mode: "console"
