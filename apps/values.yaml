@@ -33,3 +33,5 @@ gatewayApiCrds:
   enabled: false
 garage:
   enabled: false
+backstage:
+  enabled: false
