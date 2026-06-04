@@ -8,6 +8,7 @@ spec:
       dashboards: "grafana"
   datasource:
     name: prometheus
+    uid: prometheus
     type: prometheus
     access: proxy
     url: http://kube-prometheus-stack-prometheus.kube-prometheus-stack.svc.cluster.local:9090
