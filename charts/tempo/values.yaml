@@ -1,0 +1,21 @@
+# https://grafana.com/docs/tempo/latest/setup/helm-chart/
+tempo:
+  tempo:
+    storage:
+      trace:
+        backend: local
+        local:
+          path: /var/tempo/traces
+        wal:
+          path: /var/tempo/wal
+
+    resources:
+      requests:
+        memory: 256Mi
+        cpu: 100m
+      limits:
+        memory: 512Mi
+
+  persistence:
+    enabled: true
+    size: 10Gi

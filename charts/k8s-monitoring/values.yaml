@@ -16,6 +16,19 @@ k8s-monitoring:
       tenantId: "1" # Loki multi-tenant org ID
       # No auth required (yet)
 
+    local-tempo:
+      type: otlp
+      url: http://tempo.tempo.svc.cluster.local:4317
+      protocol: grpc
+      tls:
+        insecure: true
+      metrics:
+        enabled: false
+      logs:
+        enabled: false
+      traces:
+        enabled: true
+
   # Collectors (Alloy instances). Every feature below is assigned to one of these.
   # The names must match the self-monitoring labelSelectors below and the
   # alloy-mixin dashboards/ServiceMonitor, which select by app.kubernetes.io/name.
@@ -59,6 +72,18 @@ k8s-monitoring:
             memory: 256Mi
           limits:
             memory: 512Mi
+
+    # Deployment receiving OTLP traces and forwarding them to Tempo.
+    alloy-receiver:
+      presets:
+        - deployment
+      alloy:
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            memory: 256Mi
 
   # Backing services scraped for cluster and host metrics. kepler, opencost and
   # windows-exporter stay off (chart default).
@@ -106,10 +131,16 @@ k8s-monitoring:
     enabled: true
     collector: alloy-logs
 
-  # Application observability (OTLP receivers for traces).
-  # TODO: Enable once Tempo is deployed (needs a receiver collector).
+  # Application observability (OTLP receivers for traces) via alloy-receiver.
   applicationObservability:
-    enabled: false
+    enabled: true
+    collector: alloy-receiver
+    receivers:
+      otlp:
+        grpc:
+          enabled: true
+        http:
+          enabled: true
 
   # Alloy integrations (self-monitoring)
   integrations:
@@ -122,6 +153,7 @@ k8s-monitoring:
               - alloy-metrics
               - alloy-singleton
               - alloy-logs
+              - alloy-receiver
 
 alloy-mixin:
   grafanaDashboard:

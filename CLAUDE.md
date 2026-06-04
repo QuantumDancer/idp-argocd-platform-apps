@@ -28,7 +28,7 @@ Wave  1: networking-config, argocd-config,    (depend on wave -1/0 CRDs)
          grafana-operator
 Wave  2: cert-manager, cloudnative-pg,        (depend on wave 1 CRDs)
          k8s-monitoring, platform-resources,
-         external-dns
+         external-dns, tempo
 Wave  3: grafana-database                     (depends on cloudnative-pg)
 Wave  4: grafana                              (depends on grafana-operator + grafana-database)
 Wave  5: grafana-dashboards                   (depends on grafana + kube-prometheus-stack)
