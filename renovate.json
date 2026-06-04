@@ -9,6 +9,15 @@
   "assignees": [
     "benjamin"
   ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "fileMatch": ["charts/grafana/templates/grafana\\.yaml"],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>[a-z-]+) depName=(?<depName>[^\\n]+)\\n\\s+version: (?<currentValue>[^\\n]+)"
+      ]
+    }
+  ],
   "packageRules": [
     {
       "description": "Automerge Helm chart patch and minor updates after 3 days and passing CI",
