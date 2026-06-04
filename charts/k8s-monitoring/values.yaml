@@ -3,77 +3,117 @@
 
 # Configure with upstream k8s-monitoring chart values
 k8s-monitoring:
-  cluster:
-    name: home
-
-  # Local destinations (Prometheus and Loki running in the cluster)
+  # Local destinations (Prometheus and Loki running in the cluster).
   destinations:
-    - name: local-prometheus
+    local-prometheus:
       type: prometheus
       url: http://kube-prometheus-stack-prometheus.kube-prometheus-stack.svc.cluster.local:9090/api/v1/write
       # No auth required (yet)
 
-    - name: local-loki
+    local-loki:
       type: loki
       url: http://loki-gateway.loki.svc.cluster.local/loki/api/v1/push
       tenantId: "1" # Loki multi-tenant org ID
       # No auth required (yet)
 
-  # Enable cluster metrics collection
+  # Collectors (Alloy instances). Every feature below is assigned to one of these.
+  # The names must match the self-monitoring labelSelectors below and the
+  # alloy-mixin dashboards/ServiceMonitor, which select by app.kubernetes.io/name.
+  collectors:
+    # Scrapes metrics; clustered for target sharing across replicas.
+    alloy-metrics:
+      presets:
+        - clustered
+        - statefulset
+      alloy:
+        resources:
+          requests:
+            cpu: 100m
+            memory: 512Mi
+          limits:
+            memory: 2Gi
+
+    # Single-replica collector for cluster events.
+    alloy-singleton:
+      presets:
+        - singleton
+      alloy:
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            memory: 512Mi
+
+    # DaemonSet reading pod and node logs from the host filesystem.
+    alloy-logs:
+      presets:
+        - filesystem-log-reader
+        - daemonset
+      controller:
+        priorityClassName: monitoring-daemonset
+      alloy:
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            memory: 512Mi
+
+  # Backing services scraped for cluster and host metrics. kepler, opencost and
+  # windows-exporter stay off (chart default).
+  telemetryServices:
+    kube-state-metrics:
+      deploy: true
+    node-exporter:
+      deploy: true
+      priorityClassName: monitoring-daemonset
+
+  # Kubernetes cluster metrics (kube-state-metrics, kubelet, cAdvisor).
   clusterMetrics:
     enabled: true
-    node-exporter:
-      priorityClassName: monitoring-daemonset
-    # Disable unnecessary exporters
-    kepler:
-      enabled: false
-      deploy: false
-    opencost:
-      enabled: false
-      deploy: false
-    windows-exporter:
-      enabled: false
-      deploy: false
+    collector: alloy-metrics
+
+  # Host/node metrics (node-exporter). linuxHosts must be enabled explicitly;
+  # hostMetrics.enabled alone renders an empty module that scrapes nothing.
+  # labelMatchers/namespace auto-populate from the node-exporter deployed under
+  # telemetryServices above.
+  hostMetrics:
+    enabled: true
+    collector: alloy-metrics
+    linuxHosts:
+      enabled: true
 
   # Enables Alloy to discover and scrape ServiceMonitors, PodMonitors, and Probes.
-  # Without this, no metrics from Prometheus Operator objects are collected.
+  # Without this, no metrics from Prometheus Operator objects are collected. The
+  # CRDs themselves are owned by kube-prometheus-stack (sync wave 1).
   prometheusOperatorObjects:
     enabled: true
-    crds:
-      # kube-prometheus-stack (wave 1) owns these CRDs; disable here to avoid
-      # ArgoCD sync conflicts from the two releases fighting over CRD versions
-      deploy: false
+    collector: alloy-metrics
 
-  # Enable cluster events collection
+  # Cluster events collection.
   clusterEvents:
     enabled: true
+    collector: alloy-singleton
 
-  # Enable node logs collection (journald)
+  # Node logs collection (journald).
   nodeLogs:
     enabled: true
+    collector: alloy-logs
 
-  # Enable pod logs collection
-  podLogs:
+  # Pod logs collection via the Loki processing pipeline.
+  podLogsViaLoki:
     enabled: true
+    collector: alloy-logs
 
-  # Enable application observability (OTLP receivers for traces)
-  # TODO: Enable once Tempo is deployed
+  # Application observability (OTLP receivers for traces).
+  # TODO: Enable once Tempo is deployed (needs a receiver collector).
   applicationObservability:
     enabled: false
-    receivers:
-      otlp:
-        grpc:
-          enabled: true
-          port: 4317
-        http:
-          enabled: true
-          port: 4318
-      zipkin:
-        enabled: true
-        port: 9411
 
   # Alloy integrations (self-monitoring)
   integrations:
+    collector: alloy-metrics
     alloy:
       instances:
         - name: alloy
@@ -82,64 +122,6 @@ k8s-monitoring:
               - alloy-metrics
               - alloy-singleton
               - alloy-logs
-
-  # Alloy instances configuration
-  alloy-metrics:
-    enabled: true
-    alloy:
-      resources:
-        requests:
-          cpu: 100m
-          memory: 512Mi
-        limits:
-          memory: 2Gi
-
-  alloy-singleton:
-    enabled: true
-    alloy:
-      resources:
-        requests:
-          cpu: 100m
-          memory: 256Mi
-        limits:
-          memory: 512Mi
-
-  alloy-logs:
-    enabled: true
-    controller:
-      priorityClassName: monitoring-daemonset
-    alloy:
-      resources:
-        requests:
-          cpu: 100m
-          memory: 256Mi
-        limits:
-          memory: 512Mi
-
-  # TODO: Enable once Tempo is deployed
-  alloy-receiver:
-    enabled: false
-    alloy:
-      # Extra ports for OTLP and Zipkin receivers
-      extraPorts:
-        - name: otlp-grpc
-          port: 4317
-          targetPort: 4317
-          protocol: TCP
-        - name: otlp-http
-          port: 4318
-          targetPort: 4318
-          protocol: TCP
-        - name: zipkin
-          port: 9411
-          targetPort: 9411
-          protocol: TCP
-      resources:
-        requests:
-          cpu: 100m
-          memory: 256Mi
-        limits:
-          memory: 512Mi
 
 alloy-mixin:
   grafanaDashboard:
