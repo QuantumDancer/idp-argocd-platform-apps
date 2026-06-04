@@ -9,6 +9,19 @@ tempo:
         wal:
           path: /var/tempo/wal
 
+    # Generates RED metrics (rate, errors, duration) from incoming traces and
+    # remote-writes them to Prometheus. Required for Grafana Drilldown - Traces.
+    metricsGenerator:
+      enabled: true
+      remoteWriteUrl: "http://kube-prometheus-stack-prometheus.kube-prometheus-stack.svc.cluster.local:9090/api/v1/write"
+      processor:
+        service_graphs:
+          wait: 10s
+          max_items: 10000
+        span_metrics: {}
+      storage:
+        path: /var/tempo/wal/generator
+
     resources:
       requests:
         memory: 256Mi
