@@ -284,11 +284,11 @@ extraVolumeMounts: {}
 monitoring:
   metrics:
     # -- If true, a service for monitoring is created with a prometheus.io/scrape annotation
-    enabled: false
+    enabled: true
     serviceMonitor:
       # -- If true, a ServiceMonitor CRD is created for a prometheus operator
       # https://github.com/coreos/prometheus-operator
-      enabled: false
+      enabled: true
       path: /metrics
       #  namespace: monitoring  (defaults to use the namespace this chart is deployed to)
       labels: {}
@@ -299,4 +299,4 @@ monitoring:
       relabelings: []
   tracing:
     # -- specify a sink endpoint for OpenTelemetry Traces, eg. `http://localhost:4317`
-    sink: ""
+    sink: "http://k8s-monitoring-alloy-receiver.k8s-monitoring.svc.cluster.local:4317"
