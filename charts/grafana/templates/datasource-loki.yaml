@@ -15,5 +15,12 @@ spec:
     jsonData:
       'maxLines': 1000
       'httpHeaderName1': "X-Scope-OrgID"
+      derivedFields:
+        # Extract trace_id from JSON log lines and link to Tempo.
+        # Regex matches the JSON field: "trace_id":"<hex value>"
+        - name: TraceID
+          matcherRegex: '"trace_id":"([a-f0-9]+)"'
+          url: "${__value.raw}"
+          datasourceUid: tempo
     secureJsonData:
       httpHeaderValue1: "1"

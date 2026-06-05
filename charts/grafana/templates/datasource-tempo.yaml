@@ -14,8 +14,20 @@ spec:
     jsonData:
       tracesToLogsV2:
         datasourceUid: loki
-        filterByTraceID: true
-        filterBySpanID: true
+        spanStartTimeShift: "-2m"
+        spanEndTimeShift: "2m"
+        # Low-cardinality tags build the Loki stream selector {service_name="...", namespace="..."}.
+        # service.name remapped because Loki labels use underscores.
+        tags:
+          - key: service.name
+            value: service_name
+          - key: namespace
+        # trace_id is in the JSON log body, not a Loki label, so the default
+        # label-filter approach won't find it. Custom query parses it at query time.
+        filterByTraceID: false
+        filterBySpanID: false
+        customQuery: true
+        query: '{${__tags}} | json | trace_id=`${__trace.traceId}`'
       serviceMap:
         datasourceUid: prometheus
       nodeGraph:
