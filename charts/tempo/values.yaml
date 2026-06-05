@@ -22,12 +22,15 @@ tempo:
       storage:
         path: /var/tempo/wal/generator
 
+    # memBallastSizeMbs must be well below the memory limit
+    memBallastSizeMbs: 128
+
     resources:
       requests:
         memory: 256Mi
         cpu: 100m
       limits:
-        memory: 512Mi
+        memory: 1Gi
 
   persistence:
     enabled: true
