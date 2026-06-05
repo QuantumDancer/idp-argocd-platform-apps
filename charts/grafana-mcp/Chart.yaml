@@ -1,0 +1,8 @@
+apiVersion: v2
+name: grafana-mcp
+description: Grafana MCP server for AI assistant tool access
+version: 0.1.0
+dependencies:
+  - name: grafana-mcp
+    version: "0.3.1"
+    repository: https://grafana.github.io/helm-charts
