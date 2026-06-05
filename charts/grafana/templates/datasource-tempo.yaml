@@ -14,8 +14,12 @@ spec:
     jsonData:
       tracesToLogsV2:
         datasourceUid: loki
-        filterByTraceID: true
-        filterBySpanID: true
+        # trace_id/span_id are Loki structured metadata (not labels), so label-based
+        # filtering finds nothing. Use a pipeline filter query instead.
+        filterByTraceID: false
+        filterBySpanID: false
+        customQuery: true
+        query: '{service_name="${__tags["service.name"]}"} | trace_id="${__trace.traceId}"'
       serviceMap:
         datasourceUid: prometheus
       nodeGraph:
