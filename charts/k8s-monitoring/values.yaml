@@ -140,7 +140,10 @@ k8s-monitoring:
         }
       }
 
-      stage.structured_metadata {
+      // Store as labels so Tempo's filterByTraceID/filterBySpanID label filters
+      // can find them via {trace_id="..."} stream selectors.
+      // High-cardinality trade-off is acceptable for a homelab.
+      stage.labels {
         values = {
           trace_id = "",
           span_id  = "",
