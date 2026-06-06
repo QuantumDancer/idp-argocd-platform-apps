@@ -1,0 +1,10 @@
+apiVersion: v2
+name: keda
+description: KEDA event-driven autoscaler with custom configuration
+version: 0.1.0
+appVersion: "2.20.0"
+
+dependencies:
+  - name: keda
+    version: 2.20.0
+    repository: https://kedacore.github.io/charts
