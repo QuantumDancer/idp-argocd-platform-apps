@@ -12,6 +12,8 @@ helm repo add cloudnative-pg https://cloudnative-pg.github.io/charts
 helm repo add external-dns https://kubernetes-sigs.github.io/external-dns/
 helm repo add kyverno https://kyverno.github.io/kyverno/
 helm repo add portefaix https://charts.portefaix.xyz
+helm repo add dex https://charts.dexidp.io
+helm repo add kedacore https://kedacore.github.io/charts
 
 # Update repository indices
 helm repo update
