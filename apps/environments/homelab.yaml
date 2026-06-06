@@ -14,3 +14,5 @@ garage:
   enabled: true
 backstage:
   enabled: true
+rabbitmqOperator:
+  enabled: true
