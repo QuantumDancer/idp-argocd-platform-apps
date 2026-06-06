@@ -22,14 +22,15 @@ A lower wave syncs and becomes healthy before higher waves start. Apps at the sa
 ```
 Wave -1: gateway-api-crds                    (CRDs only, no deps)
 Wave  0: external-secrets-operator, kyverno,  (no in-repo CRD deps)
-         loki, longhorn
+         loki, longhorn, rabbitmq-operator
 Wave  1: networking-config, argocd-config,    (depend on wave -1/0 CRDs)
          crossplane, kube-prometheus-stack,
          grafana-operator
 Wave  2: cert-manager, cloudnative-pg,        (depend on wave 1 CRDs)
          k8s-monitoring, platform-resources,
          external-dns, tempo
-Wave  3: grafana-database                     (depends on cloudnative-pg)
+Wave  3: grafana-database,                    (depends on cloudnative-pg)
+         rabbitmq-topology-operator           (depends on rabbitmq-operator + cert-manager)
 Wave  4: grafana                              (depends on grafana-operator + grafana-database)
 Wave  5: grafana-dashboards                   (depends on grafana + kube-prometheus-stack)
 ```

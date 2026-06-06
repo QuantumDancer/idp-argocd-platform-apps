@@ -8,7 +8,8 @@ Each subdirectory is an ArgoCD Application source — ArgoCD applies the manifes
 
 | Directory            | Component                 | Version | Upstream release                                      |
 | -------------------- | ------------------------- | ------- | ----------------------------------------------------- |
-| `rabbitmq-operator/` | RabbitMQ Cluster Operator | v2.21.0 | https://github.com/rabbitmq/cluster-operator/releases |
+| `rabbitmq-operator/`           | RabbitMQ Cluster Operator            | v2.21.0 | https://github.com/rabbitmq/cluster-operator/releases            |
+| `rabbitmq-topology-operator/` | RabbitMQ Messaging Topology Operator | v1.19.2 | https://github.com/rabbitmq/messaging-topology-operator/releases |
 
 ## Updating a manifest
 

@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/argoproj.io/application_v1alpha1.json
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: rabbitmq-topology-operator
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "3" # Requires RabbitmqCluster CRD (wave 0) + cert-manager (wave 2)
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: platform
+
+  source:
+    repoURL: {{ .Values.repos.platformApps.repoURL }}
+    targetRevision: {{ .Values.repos.platformApps.targetRevision }}
+    path: manifests/rabbitmq-topology-operator
+
+  destination:
+    server: https://kubernetes.default.svc
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - ServerSideApply=true
