@@ -1,0 +1,8 @@
+hostname: dex.dev.idp.rottlr.de
+
+config:
+  issuer: https://dex.dev.idp.rottlr.de
+  callbackURL: https://dex.dev.idp.rottlr.de/callback
+  grafanaRedirectURL: https://grafana.dev.idp.rottlr.de/login/generic_oauth
+  # saml-sso-url and saml-ca-data are read from this Vault path by ESO (see templates/dex-config.yaml).
+  samlVaultPath: idp/platform/observability/grafana-dex

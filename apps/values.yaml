@@ -35,3 +35,5 @@ garage:
   enabled: false
 backstage:
   enabled: false
+dex:
+  enabled: false

@@ -1,0 +1,54 @@
+# Renders the full Dex config.yaml into the `dex-config` Secret that the Dex deployment mounts
+# (dex.configSecret.create=false). The SAML ssoURL/caData come from Vault so the IdC tenant
+# identifiers stay out of git; the rest of the config is non-secret structure from values.
+#
+# ESO uses Go templates with the same delimiters as Helm, so the two runtime placeholders for
+# ssoUrl/caData are wrapped in backtick raw strings to pass through Helm verbatim and be resolved
+# later by the External Secrets Operator.
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: dex-config
+spec:
+  secretStoreRef:
+    name: vault-backend
+    kind: ClusterSecretStore
+  refreshInterval: "1h0m0s"
+  target:
+    name: {{ .Values.dex.configSecret.name }}
+    template:
+      engineVersion: v2
+      data:
+        config.yaml: |
+          issuer: {{ .Values.config.issuer }}
+          storage:
+            type: memory
+          oauth2:
+            skipApprovalScreen: true
+          connectors:
+          - type: saml
+            id: aws
+            name: AWS IAM Identity Center
+            config:
+              ssoURL: "{{ `{{ .ssoUrl }}` }}"
+              caData: "{{ `{{ .caData }}` }}"
+              redirectURI: {{ .Values.config.callbackURL }}
+              entityIssuer: {{ .Values.config.callbackURL }}
+              usernameAttr: email
+              emailAttr: email
+              groupsAttr: groups
+          staticClients:
+          - id: grafana
+            name: Grafana
+            redirectURIs:
+            - {{ .Values.config.grafanaRedirectURL }}
+            secretEnv: GRAFANA_CLIENT_SECRET
+  data:
+  - secretKey: ssoUrl
+    remoteRef:
+      key: {{ .Values.config.samlVaultPath }}
+      property: saml-sso-url
+  - secretKey: caData
+    remoteRef:
+      key: {{ .Values.config.samlVaultPath }}
+      property: saml-ca-data

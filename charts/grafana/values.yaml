@@ -1,6 +1,21 @@
 grafana:
   hostname: grafana.k8s.home.rottlr.de
 
+  # External URL Grafana is reached at. Must be set whenever SSO is enabled so the
+  # OAuth redirect_uri matches the address the browser used (TLS is terminated at the
+  # Gateway, so Grafana cannot infer the public https URL on its own).
+  rootUrl: ""
+
+  # SSO configuration. Left disabled by default; each environment selects a provider.
+  auth:
+    # "" disables SSO, "gitlab" uses auth.gitlab, "generic_oauth" uses auth.generic_oauth.
+    provider: ""
+    disableLoginForm: true
+    oauthAutoLogin: true
+    # Provider-specific settings are supplied per environment (see environments/*.yaml).
+    gitlab: {}
+    genericOauth: {}
+
 gateway:
   name: external
   namespace: gateway

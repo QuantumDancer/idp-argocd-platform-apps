@@ -1,0 +1,49 @@
+# Dex acts as a SAML -> OIDC broker so that OSS Grafana (no native SAML) can authenticate
+# against AWS IAM Identity Center (no OIDC for custom apps).
+#
+# Dex authenticates IdC responses by verifying the SAML assertion signature against the IdP's
+# public certificate (caData) — there are no AWS credentials or client secrets towards IdC.
+# The SSO URL and certificate identify the IdC tenant, so (like ArgoCD's SSO inputs) they are
+# kept out of git: ESO renders the Dex config.yaml from Vault (see templates/dex-config.yaml).
+
+gateway:
+  name: external
+  namespace: gateway
+
+# Non-secret structure of the Dex config. The SAML ssoURL/caData are pulled from Vault by ESO;
+# everything here is environment coordinates set in environments/<environment>.yaml.
+config:
+  issuer: ""
+  # Dex SAML Service Provider ACS / entity id (the IdC application's redirect + audience).
+  callbackURL: ""
+  # Grafana's OIDC redirect URL, registered as the static client's allowed redirect.
+  grafanaRedirectURL: ""
+  # Vault KV path holding saml-sso-url and saml-ca-data.
+  samlVaultPath: idp/platform/observability/grafana-dex
+
+dex:
+  # Deterministic resource names so the HTTPRoute backend and issuer URL are stable.
+  fullnameOverride: dex
+
+  replicaCount: 1
+
+  # Use the ESO-rendered secret (templates/dex-config.yaml) instead of a chart-generated config.
+  configSecret:
+    create: false
+    name: dex-config
+
+  # Grafana<->Dex static client secret, sourced from Vault via grafana-oauth-credentials.
+  # Referenced by the static client's secretEnv in the rendered config.
+  envVars:
+    - name: GRAFANA_CLIENT_SECRET
+      valueFrom:
+        secretKeyRef:
+          name: grafana-oauth-credentials
+          key: client-secret
+
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      memory: 128Mi

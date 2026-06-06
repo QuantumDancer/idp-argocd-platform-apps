@@ -9,3 +9,7 @@ repos:
     targetRevision: development
   userApps:
     targetRevision: development
+
+# Dex brokers IAM Identity Center SAML -> OIDC for Grafana SSO (AWS only).
+dex:
+  enabled: true

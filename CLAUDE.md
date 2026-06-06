@@ -124,6 +124,28 @@ kubectl apply --dry-run=server -f <file>
 - Uses Kubernetes auth with role "external-secrets-operator"
 - Vault path: "secrets" (KV v2 engine)
 
+**Grafana SSO**:
+
+- Grafana login is SSO-only (`disable_login_form: true`); the Vault admin user/password
+  (`idp/platform/observability/grafana`) is retained as break-glass via API/CLI basic auth only.
+- Auth provider is environment-specific (`charts/grafana/environments/*.yaml`):
+  - Homelab → GitLab OAuth directly (`auth.gitlab`). Groups `idp/platform` → GrafanaAdmin,
+    `idp/team-a` → Viewer.
+  - AWS → `auth.generic_oauth` against the `dex` chart, which brokers IAM Identity Center SAML to
+    OIDC (OSS Grafana has no SAML; IdC has no OIDC for custom apps — same reason ArgoCD uses Dex).
+    `PlatformEngineers` group GUID → GrafanaAdmin. The Dex app is gated by `dex.enabled` (AWS only).
+- OAuth client id/secret live in Vault at `idp/platform/observability/grafana-oauth` (the homelab
+  GitLab app creds, or the AWS Grafana↔Dex static-client creds). On AWS, the IdC SAML SSO URL +
+  signing cert also come from Vault (`idp/platform/observability/grafana-dex`); ESO renders the Dex
+  `config.yaml` from them so the IdC tenant identifiers stay out of git, consistent with ArgoCD's
+  SSO inputs. All AWS values are managed in `terraform-aws-infra/modules/vault-config`.
+- The AWS Dex SAML application in IAM Identity Center (created manually) needs these attribute
+  mappings — Subject → `${user:subject}` (format `persistent`), `email` → `${user:email}`,
+  `groups` → `${user:groups}`. A missing `Subject` mapping makes IdC reject sign-in with a
+  misleading "No access … primary email" error; `email`/`groups` must be named exactly so because
+  Dex reads them by name (`emailAttr`/`groupsAttr`) and `groups` carries the role-mapping GUID. See
+  the terraform-aws-infra README (SSO section) for the full setup.
+
 ## Important Patterns
 
 **Adding New Platform Applications**:

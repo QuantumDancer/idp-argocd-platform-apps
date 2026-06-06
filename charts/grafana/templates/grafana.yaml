@@ -16,12 +16,53 @@ spec:
   config:
     log:
       mode: "console"
+    server:
+      # OAuth redirect_uri is derived from root_url; required behind the TLS-terminating Gateway.
+      root_url: {{ required "grafana.rootUrl must be set" .Values.grafana.rootUrl | quote }}
     database:
       type: "postgres"
       host: "grafana-database-cluster-rw.grafana-database.svc.cluster.local"
       name: "grafana"
       user: "$__env{GF_DATABASE_USERNAME}"
       password: "$__env{GF_DATABASE_PASSWORD}"
+    {{- if .Values.grafana.auth.provider }}
+    auth:
+      # Hide the username/password form so only SSO is offered in the UI. The admin
+      # account stays usable via API/CLI basic auth (auth.basic, enabled by default)
+      # as a break-glass path and for the grafana-mcp service account.
+      disable_login_form: {{ .Values.grafana.auth.disableLoginForm | quote }}
+      oauth_auto_login: {{ .Values.grafana.auth.oauthAutoLogin | quote }}
+    {{- if eq .Values.grafana.auth.provider "gitlab" }}
+    auth.gitlab:
+      enabled: "true"
+      # Lets role_attribute_path promote users to server admin (GrafanaAdmin).
+      allow_assign_grafana_admin: "true"
+      # Deny users whose role_attribute_path evaluates to empty (no matching group).
+      role_attribute_strict: "true"
+      client_id: "$__env{GF_OAUTH_CLIENT_ID}"
+      client_secret: "$__env{GF_OAUTH_CLIENT_SECRET}"
+      scopes: {{ .Values.grafana.auth.gitlab.scopes | quote }}
+      auth_url: {{ .Values.grafana.auth.gitlab.authUrl | quote }}
+      token_url: {{ .Values.grafana.auth.gitlab.tokenUrl | quote }}
+      api_url: {{ .Values.grafana.auth.gitlab.apiUrl | quote }}
+      allowed_groups: {{ .Values.grafana.auth.gitlab.allowedGroups | quote }}
+      role_attribute_path: {{ .Values.grafana.auth.gitlab.roleAttributePath | quote }}
+    {{- else if eq .Values.grafana.auth.provider "generic_oauth" }}
+    auth.generic_oauth:
+      enabled: "true"
+      name: {{ .Values.grafana.auth.genericOauth.name | quote }}
+      allow_assign_grafana_admin: "true"
+      role_attribute_strict: "true"
+      client_id: "$__env{GF_OAUTH_CLIENT_ID}"
+      client_secret: "$__env{GF_OAUTH_CLIENT_SECRET}"
+      scopes: {{ .Values.grafana.auth.genericOauth.scopes | quote }}
+      auth_url: {{ .Values.grafana.auth.genericOauth.authUrl | quote }}
+      token_url: {{ .Values.grafana.auth.genericOauth.tokenUrl | quote }}
+      api_url: {{ .Values.grafana.auth.genericOauth.apiUrl | quote }}
+      groups_attribute_path: {{ .Values.grafana.auth.genericOauth.groupsAttributePath | quote }}
+      role_attribute_path: {{ .Values.grafana.auth.genericOauth.roleAttributePath | quote }}
+    {{- end }}
+    {{- end }}
     # unified_alerting:
     #   enabled: true
     #   ha_listen_address: "${POD_IP}:9094"
@@ -58,6 +99,18 @@ spec:
                     secretKeyRef:
                       key: password
                       name: grafana-database-credentials
+                {{- if .Values.grafana.auth.provider }}
+                - name: GF_OAUTH_CLIENT_ID
+                  valueFrom:
+                    secretKeyRef:
+                      key: client-id
+                      name: grafana-oauth-credentials
+                - name: GF_OAUTH_CLIENT_SECRET
+                  valueFrom:
+                    secretKeyRef:
+                      key: client-secret
+                      name: grafana-oauth-credentials
+                {{- end }}
               resources:
                 limits:
                   memory: 512Mi

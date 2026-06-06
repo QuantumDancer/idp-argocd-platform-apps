@@ -1,0 +1,11 @@
+apiVersion: v2
+name: dex
+description: Dex OIDC broker (SAML -> OIDC) for SSO in AWS environments
+version: 0.1.0
+appVersion: "1.0.0"
+
+dependencies:
+  # renovate: registryUrl=https://charts.dexidp.io
+  - name: dex
+    version: 0.24.1
+    repository: https://charts.dexidp.io

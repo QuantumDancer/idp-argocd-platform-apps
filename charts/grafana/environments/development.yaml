@@ -1,2 +1,17 @@
 grafana:
   hostname: grafana.dev.idp.rottlr.de
+  rootUrl: https://grafana.dev.idp.rottlr.de
+
+  auth:
+    provider: generic_oauth
+    genericOauth:
+      name: "AWS IAM Identity Center"
+      # Dex brokers SAML (IAM Identity Center) -> OIDC for OSS Grafana.
+      authUrl: https://dex.dev.idp.rottlr.de/auth
+      tokenUrl: https://dex.dev.idp.rottlr.de/token
+      apiUrl: https://dex.dev.idp.rottlr.de/userinfo
+      scopes: "openid email profile groups"
+      groupsAttributePath: groups
+      # PlatformEngineers group GUID -> server admin. No developer role yet, so
+      # everyone else evaluates to "" and is denied by role_attribute_strict.
+      roleAttributePath: "contains(groups[*], '836428d2-d0e1-7084-b784-941148ac8142') && 'GrafanaAdmin' || ''"

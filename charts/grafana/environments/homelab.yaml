@@ -1,5 +1,18 @@
 grafana:
   hostname: grafana.k8s.home.rottlr.de
+  rootUrl: https://grafana.k8s.home.rottlr.de
+
+  auth:
+    provider: gitlab
+    gitlab:
+      authUrl: https://gitlab.home.rottlr.de/oauth/authorize
+      tokenUrl: https://gitlab.home.rottlr.de/oauth/token
+      apiUrl: https://gitlab.home.rottlr.de/api/v4
+      scopes: "openid email profile"
+      # Only members of these GitLab groups may sign in; groups[*] are full group paths.
+      allowedGroups: "idp/platform, idp/team-a"
+      # idp/platform -> server admin, idp/team-a -> read-only.
+      roleAttributePath: "contains(groups[*], 'idp/platform') && 'GrafanaAdmin' || contains(groups[*], 'idp/team-a') && 'Viewer'"
 
 gateway:
   name: external
