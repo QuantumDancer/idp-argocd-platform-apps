@@ -48,7 +48,7 @@ loki:
 
     persistence:
       enabled: true
-      size: 20Gi
+      size: 5Gi
 
   # Gateway configuration
   gateway:

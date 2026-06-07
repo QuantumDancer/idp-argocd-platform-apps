@@ -16,10 +16,10 @@ deployment:
 persistence:
   meta:
     storageClass: longhorn
-    size: 1Gi
+    size: 512Mi
   data:
     storageClass: longhorn
-    size: 10Gi
+    size: 3Gi
 
 resources:
   requests:

@@ -34,4 +34,4 @@ tempo:
 
   persistence:
     enabled: true
-    size: 10Gi
+    size: 3Gi

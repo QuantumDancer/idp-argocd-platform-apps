@@ -43,7 +43,7 @@ kube-prometheus-stack:
             accessModes: ["ReadWriteOnce"]
             resources:
               requests:
-                storage: 20Gi
+                storage: 15Gi
 
   alertmanager:
     alertmanagerSpec:
