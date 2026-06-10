@@ -7,7 +7,12 @@ gateway:
 argocd:
   hostname: argocd.k8s.home.rottlr.de
   serviceName: argocd-server
-  servicePort: 80
+  # Port 443 instead of 80: Cilium's Envoy rewrites gRPC-web to native gRPC
+  # (grpc_web filter), which requires an HTTP/2 (h2c) upstream connection.
+  # The argo-cd chart only supports appProtocol (kubernetes.io/h2c, GEP-1911)
+  # on the https port via server.service.servicePortHttpsAppProtocol.
+  # Both ports target the same plaintext container port 8080 (server.insecure).
+  servicePort: 443
   namespace: argocd
 
 additionalRepoSecrets: true
