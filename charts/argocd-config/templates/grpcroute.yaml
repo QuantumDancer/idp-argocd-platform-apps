@@ -14,9 +14,20 @@ spec:
     namespace: {{ .Values.gateway.namespace }}
 
   rules:
-  - backendRefs:
+    # The content-type match makes this route more specific than the
+    # HTTPRoute's bare "/" prefix, so it sorts first and captures all gRPC
+    # traffic (Envoy's grpc_web filter rewrites gRPC-web requests to
+    # content-type application/grpc before route selection). Without it,
+    # Gateway API tie-breaking (oldest, then name) would let the HTTPRoute
+    # win and gRPC would be downgraded to HTTP/1.1, breaking "argocd login".
+  - matches:
+    - headers:
+      - name: content-type
+        type: RegularExpression
+        value: application/grpc.*
+    backendRefs:
     - group: ""
       kind: Service
       name: {{ .Values.argocd.serviceName }}
-      port: {{ .Values.argocd.servicePort }}
+      port: {{ .Values.argocd.grpcServicePort }}
       weight: 1

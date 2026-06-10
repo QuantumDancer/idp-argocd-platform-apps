@@ -7,12 +7,15 @@ gateway:
 argocd:
   hostname: argocd.k8s.home.rottlr.de
   serviceName: argocd-server
-  # Port 443 instead of 80: Cilium's Envoy rewrites gRPC-web to native gRPC
-  # (grpc_web filter), which requires an HTTP/2 (h2c) upstream connection.
-  # The argo-cd chart only supports appProtocol (kubernetes.io/h2c, GEP-1911)
-  # on the https port via server.service.servicePortHttpsAppProtocol.
-  # Both ports target the same plaintext container port 8080 (server.insecure).
-  servicePort: 443
+  # Both service ports target the same plaintext container port 8080
+  # (server.insecure), but argocd-server's connection multiplexer requires
+  # gRPC on HTTP/2 and everything else on HTTP/1.1 — plain h2c requests get
+  # the connection reset. The HTTPRoute therefore targets port 80 (no
+  # appProtocol -> HTTP/1.1) while the GRPCRoute targets port 443, which
+  # declares appProtocol kubernetes.io/h2c (set via terraform-talos-cluster;
+  # the argo-cd chart only supports appProtocol on the https port).
+  servicePort: 80
+  grpcServicePort: 443
   namespace: argocd
 
 additionalRepoSecrets: true
