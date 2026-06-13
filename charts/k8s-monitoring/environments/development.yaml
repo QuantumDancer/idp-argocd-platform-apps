@@ -1,3 +1,11 @@
+# Faro receiver exposure for development SPAs (served under *.dev.idp.rottlr.de).
+# FARO_URL → https://<hostname>/collect.
+global:
+  faro:
+    hostname: faro.dev.idp.rottlr.de
+    allowedOrigins:
+      - "https://*.dev.idp.rottlr.de"
+
 k8s-monitoring:
   cluster:
     name: development

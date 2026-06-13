@@ -1,3 +1,11 @@
+# Faro receiver exposure for homelab SPAs (served under *.k8s.home.rottlr.de,
+# covered by the existing wildcard TLS cert). FARO_URL → https://<hostname>/collect.
+global:
+  faro:
+    hostname: faro.k8s.home.rottlr.de
+    allowedOrigins:
+      - "https://*.k8s.home.rottlr.de"
+
 k8s-monitoring:
   cluster:
     name: home
