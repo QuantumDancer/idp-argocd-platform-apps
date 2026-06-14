@@ -133,19 +133,23 @@ k8s-monitoring:
           }
 
           output {
-            # Browser logs/events/measurements go through a labeling stage (below)
-            # before Loki; traces go straight to the Tempo pipeline.
+            // Browser logs/events/measurements go through a labeling stage (below)
+            // before Loki; traces go straight to the Tempo pipeline.
             logs   = [loki.process.faro_labels.receiver]
             traces = [otelcol.processor.attributes.local_tempo.input]
           }
         }
 
-        # faro.receiver emits logfmt lines but attaches no Loki stream labels, so every
-        # SPA's telemetry collapses into one stream that Loki backfills as
-        # service_name="unknown_service" — undiscoverable per app and colliding across
-        # apps. Promote app_name -> service_name (Loki's primary service identifier) and
-        # the signal kind (log|event|measurement|exception) to labels. Both are low
-        # cardinality (a few SPAs x 4 kinds), so this stays index-safe.
+        // faro.receiver emits logfmt lines but attaches no Loki stream labels, so every
+        // SPA's telemetry collapses into one stream that Loki backfills as
+        // service_name="unknown_service" — undiscoverable per app and colliding across
+        // apps. Promote app_name and the signal kind (log|event|measurement|exception)
+        // to labels. The label NAMES match the upstream Grafana Faro dashboard
+        // (grafana/faro-web-sdk frontend-application.json), which keys on {kind, app}
+        // (e.g. {kind="measurement", app="$app"} | logfmt | unwrap ttfb) and a $app
+        // variable of label_values(app); service_name is set too so the SPA also shows
+        // as a proper service in Loki's native views. All low cardinality (a few SPAs
+        // x 4 kinds), so this stays index-safe.
         loki.process "faro_labels" {
           forward_to = [loki.write.local_loki.receiver]
 
@@ -157,6 +161,7 @@ k8s-monitoring:
           }
           stage.labels {
             values = {
+              "app"          = "app_name",
               "service_name" = "app_name",
               "kind"         = "kind",
             }
