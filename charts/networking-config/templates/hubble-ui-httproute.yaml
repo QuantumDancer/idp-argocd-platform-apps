@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/gateway.networking.k8s.io/httproute_v1.json
+# Exposes the Hubble UI (installed with Cilium via the terraform-talos-cluster repo)
+# through the external Gateway. The route lives in kube-system because HTTPRoute
+# backendRefs resolve in the route's own namespace, which is where hubble-ui runs.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: hubble-ui
+  namespace: kube-system
+spec:
+  parentRefs:
+    - name: external
+      namespace: gateway
+  hostnames:
+    - "hubble.k8s.home.rottlr.de"
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: hubble-ui
+          port: 80
