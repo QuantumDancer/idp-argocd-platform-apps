@@ -1,0 +1,27 @@
+# The operator uses controller-runtime leader election (--leader-elect, backed by
+# a coordination.k8s.io Lease), so a second replica is a warm standby that takes
+# over reconciliation if the leader fails. HA on the dev cluster only.
+# Keep the leader available during voluntary disruptions (e.g. node drains) by
+# allowing only one of the two replicas to be evicted at a time.
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+dragonfly-operator:
+  replicaCount: 2
+
+  manager:
+    # Prefer (not require) spreading the two replicas across nodes so a single
+    # node failure can't take out both leader and standby. Soft so the pods
+    # still schedule on a single-node cluster.
+    affinity:
+      podAntiAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              topologyKey: kubernetes.io/hostname
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/name: dragonfly-operator
+                  app.kubernetes.io/instance: dragonfly-operator
+                  control-plane: controller-manager

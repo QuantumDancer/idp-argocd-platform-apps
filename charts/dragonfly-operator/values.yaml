@@ -1,0 +1,31 @@
+# PodDisruptionBudget for the operator pods. The upstream chart ships no PDB, so
+# this is rendered by a local template. Only useful with replicaCount > 1, so it
+# is enabled per-environment (see environments/development.yaml).
+podDisruptionBudget:
+  enabled: false
+  minAvailable: 1
+
+dragonfly-operator:
+  crds:
+    install: true
+    keep: true
+
+  manager:
+    resources:
+      requests:
+        cpu: 10m
+        memory: 64Mi
+      limits:
+        memory: 128Mi
+
+  # kube-rbac-proxy fronts the metrics endpoint. The upstream chart ships a CPU
+  # limit by default; null it out (Helm deletes null keys on merge) to keep
+  # memory-only limits per repo convention.
+  rbacProxy:
+    resources:
+      requests:
+        cpu: 10m
+        memory: 64Mi
+      limits:
+        cpu: null
+        memory: 128Mi

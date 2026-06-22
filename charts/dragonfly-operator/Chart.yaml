@@ -1,0 +1,10 @@
+apiVersion: v2
+name: dragonfly-operator
+description: Dragonfly Operator for managing Dragonfly in-memory datastore instances
+version: 0.1.0
+appVersion: "v1.6.1"
+
+dependencies:
+  - name: dragonfly-operator
+    version: v1.6.1
+    repository: oci://ghcr.io/dragonflydb/dragonfly-operator/helm

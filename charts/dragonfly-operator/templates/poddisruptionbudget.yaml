@@ -1,0 +1,17 @@
+{{- if .Values.podDisruptionBudget.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: dragonfly-operator
+  labels:
+    app.kubernetes.io/name: dragonfly-operator
+    app.kubernetes.io/instance: dragonfly-operator
+spec:
+  minAvailable: {{ .Values.podDisruptionBudget.minAvailable }}
+  selector:
+    # Must match the operator Deployment's pod selector (set by the upstream subchart).
+    matchLabels:
+      app.kubernetes.io/name: dragonfly-operator
+      app.kubernetes.io/instance: dragonfly-operator
+      control-plane: controller-manager
+{{- end }}
