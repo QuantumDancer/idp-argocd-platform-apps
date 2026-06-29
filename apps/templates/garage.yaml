@@ -6,7 +6,7 @@ metadata:
   name: garage
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "2" # Requires ExternalSecrets CRD (wave 0)
+    argocd.argoproj.io/sync-wave: "4" # Requires the garage-operator CRDs + controller (wave 3)
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
@@ -33,15 +33,4 @@ spec:
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true
-
-  ignoreDifferences:
-    # Kubernetes adds apiVersion, kind, volumeMode, and status to VCT entries at admission;
-    # these fields are absent from the Helm template and cannot be set (VCTs are immutable after creation).
-    - group: apps
-      kind: StatefulSet
-      jqPathExpressions:
-        - .spec.volumeClaimTemplates[].apiVersion
-        - .spec.volumeClaimTemplates[].kind
-        - .spec.volumeClaimTemplates[].spec.volumeMode
-        - .spec.volumeClaimTemplates[].status
 {{- end }}

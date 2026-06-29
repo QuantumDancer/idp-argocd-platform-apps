@@ -1,0 +1,40 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/argoproj.io/application_v1alpha1.json
+{{- if .Values.garageOperator.enabled }}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: garage-operator
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "3" # Requires cert-manager (wave 2) for its webhook/metrics certs
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: platform
+
+  source:
+    # The operator ships its Helm chart in-repo; consume it directly from the tagged release.
+    repoURL: https://github.com/QuantumDancer/garage-operator.git
+    targetRevision: v0.1.0-rc.1
+    path: dist/chart
+    helm:
+      releaseName: garage-operator
+      # The in-git Chart.yaml appVersion is 0.1.0 (the RC is only stamped at package time),
+      # so pin the manager image to the published release-candidate tag.
+      values: |
+        manager:
+          image:
+            tag: 0.1.0-rc.1
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: garage-operator-system
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true # CRDs exceed the client-side apply annotation size limit
+{{- end }}

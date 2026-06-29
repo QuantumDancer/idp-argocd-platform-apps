@@ -1,163 +1,53 @@
-# Default values for garage.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
+# Default values for the garage chart.
+#
+# This chart no longer deploys Garage directly. It declares an operator-managed
+# GarageCluster (garage.rottler.io/v1alpha1) plus the Gateway API HTTPRoute that
+# fronts its S3 API. The garage-operator owns the StatefulSet, Services, the admin
+# and RPC secrets, and the metrics PodMonitor.
 
 # -- Additional labels to add to all resources created by this chart
 commonLabels: {}
-#   app.kubernetes.io/part-of: storage
-#   team: platform
 
-# Garage configuration. These values go to garage.toml
-garage:
-  # -- Can be changed for better performance on certain systems
-  # https://garagehq.deuxfleurs.fr/documentation/reference-manual/configuration/#db_engine
-  dbEngine: "lmdb"
+garageCluster:
+  # -- Replication factor. Immutable once the cluster is created.
+  replicationFactor: 3
 
-  # -- Defaults is 1MB
-  # An increase can result in better performance in certain scenarios
-  # https://garagehq.deuxfleurs.fr/documentation/reference-manual/configuration/#block_size
-  blockSize: "1048576"
+  # -- Garage image override. Leave both empty to use the operator's tested default.
+  image:
+    repository: ""
+    tag: ""
 
-  # -- Default to 3 replicas, see the replication_factor section at
-  # https://garagehq.deuxfleurs.fr/documentation/reference-manual/configuration/#replication_factor
-  replicationFactor: "3"
+  nodePool:
+    name: default
+    # -- Number of Garage nodes (StatefulSet replicas) in this pool.
+    replicas: 3
+    storage:
+      data:
+        size: 1Ti
+        # -- Leave empty to use the cluster's default StorageClass.
+        storageClass: ""
+      meta:
+        size: 5Gi
+        storageClass: ""
+    # -- Pod resource requests/limits for the Garage containers.
+    resources: {}
 
-  # -- By default, enable read-after-write consistency guarantees, see the consistency_mode section at
-  # https://garagehq.deuxfleurs.fr/documentation/reference-manual/configuration/#consistency_mode
-  consistencyMode: "consistent"
-
-  # -- zstd compression level of stored blocks
-  # https://garagehq.deuxfleurs.fr/documentation/reference-manual/configuration/#compression_level
-  compressionLevel: "1"
-
-  # -- If this value is set, Garage will automatically take a snapshot of the metadata DB file at a regular interval and save it in the metadata directory.
-  # https://garagehq.deuxfleurs.fr/documentation/reference-manual/configuration/#metadata_auto_snapshot_interval
-  metadataAutoSnapshotInterval: ""
-
-  rpcBindAddr: "[::]:3901"
-  # -- If not given, a random secret will be generated and stored in a Secret object
-  rpcSecret: ""
-  # -- If you want to provide an rpcSecret within an existing k8s secret,
-  # specify the secret name here, and store the value under the secret key `rpcSecret`
-  # the default secret will not be created
-  existingRpcSecret: ""
-  # -- This is not required if you use the integrated kubernetes discovery
-  bootstrapPeers: []
-  # -- Set to true if you want to use k8s discovery but install the CRDs manually outside
-  # of the helm chart, for example if you operate at namespace level without cluster resources
-  kubernetesSkipCrd: false
   s3:
     api:
-      bindAddr: "[::]:3900"
-      region: "garage"
-      rootDomain: ".s3.garage.tld"
-    web:
-      bindAddr: "[::]:3902"
-      rootDomain: ".web.garage.tld"
-      index: "index.html"
-  admin:
-    apiBindAddr: "[::]:3903"
+      region: garage
+      # -- DNS suffix for virtual-hosted-style bucket access (e.g. ".s3.garage.tld").
+      rootDomain: ""
 
-  # -- Additional configuration to append to garage.toml. Use a multi-line string for custom config.
-  # Example:
-  #  additionalTopLevelConfig: |-
-  #    data_fsync = true
-  additionalTopLevelConfig: ""
+  # -- Namespaces (besides the cluster's own) allowed to host GarageBucket / GarageKey
+  # resources that reference this cluster. Empty list => only the cluster's namespace.
+  referencePolicy:
+    allowedNamespaces: []
 
-  # -- if not empty string, allow using an existing ConfigMap for the garage.toml,
-  # if set, ignores garage.toml
-  existingConfigMap: ""
+  metrics:
+    # -- If true, the operator creates a PodMonitor scraping the Garage metrics.
+    enabled: false
 
-  # -- String Template for the garage configuration
-  # if set, ignores above values.
-  # Values can be templated,
-  # see https://garagehq.deuxfleurs.fr/documentation/reference-manual/configuration/
-  garageTomlString: ""
-
-# Data persistence
-persistence:
-  enabled: true
-  meta:
-    # storageClass: "fast-storage-class"
-    size: 100Mi
-    # used only for daemon sets
-    hostPath: /var/lib/garage/meta
-  data:
-    # storageClass: "slow-storage-class"
-    size: 100Mi
-    # used only for daemon sets
-    hostPath: /var/lib/garage/data
-
-# Deployment configuration
-deployment:
-  # -- Switchable to DaemonSet
-  kind: StatefulSet
-  # -- Number of StatefulSet replicas/garage nodes to start
-  replicaCount: 3
-  # -- If using statefulset, allow Parallel or OrderedReady (default)
-  podManagementPolicy: OrderedReady
-
-image:
-  # -- default to amd64 docker image
-  repository: dxflrs/amd64_garage
-  # -- set the image tag, please prefer using the chart version and not this
-  # to avoid compatibility issues
-  tag: ""
-  pullPolicy: IfNotPresent
-
-initImage:
-  repository: busybox
-  tag: stable
-  pullPolicy: IfNotPresent
-
-# -- set if you need credentials to pull your custom image
-imagePullSecrets: []
-nameOverride: ""
-fullnameOverride: ""
-
-serviceAccount:
-  # -- Specifies whether a service account should be created
-  create: true
-  # -- Annotations to add to the service account
-  annotations: {}
-  # -- The name of the service account to use.
-  # If not set and create is true, a name is generated using the fullname template
-  name: ""
-
-# -- additional pod annotations
-podAnnotations: {}
-
-podSecurityContext:
-  runAsUser: 1000
-  runAsGroup: 1000
-  fsGroup: 1000
-  fsGroupChangePolicy: "OnRootMismatch"
-  runAsNonRoot: true
-
-securityContext:
-  # -- The default security context is heavily restricted,
-  # feel free to tune it to your requirements
-  capabilities:
-    drop:
-      - ALL
-  readOnlyRootFilesystem: true
-
-service:
-  # -- You can rely on any service to expose your cluster
-  # - ClusterIP (+ Ingress)
-  # - NodePort (+ Ingress)
-  # - LoadBalancer
-  type: ClusterIP
-  # -- Annotations to add to the service
-  annotations: {}
-  s3:
-    api:
-      port: 3900
-    web:
-      port: 3902
-    # NOTE: the admin API is excluded for now as it is not consistent across nodes
-
-# Gateway API HTTPRoute configuration (replaces Ingress for clusters using Gateway API)
+# Gateway API HTTPRoute fronting the S3 API endpoint.
 httproute:
   s3:
     api:
@@ -165,138 +55,8 @@ httproute:
       # Also creates a wildcard route for virtual-hosted-style bucket access (<bucket>.<hostname>).
       enabled: false
       hostname: "s3.garage.tld"
-    web:
-      # -- If true, an HTTPRoute is created for the S3 web endpoint.
-      # Also creates a wildcard route for bucket-prefixed access (<bucket>.<hostname>).
-      enabled: false
-      hostname: "web.garage.tld"
 
-# -- Gateway to attach HTTPRoutes to. Required when httproute.s3.api.enabled or httproute.s3.web.enabled is true.
+# -- Gateway to attach the HTTPRoute to. Required when httproute.s3.api.enabled is true.
 gateway:
   name: ""
   namespace: ""
-
-# External Secrets Operator integration for sourcing secrets from Vault
-externalSecret:
-  rpcSecret:
-    # -- If true, an ExternalSecret is created to populate the RPC secret from Vault.
-    # Set garage.existingRpcSecret to "<release>-rpc-secret" when enabling this,
-    # so the chart's own Secret is not created alongside it.
-    enabled: false
-    # -- Vault KV path for the RPC secret. The secret must contain a field named "rpcSecret".
-    vaultKey: "idp/platform/garage/rpc-secret"
-
-ingress:
-  s3:
-    api:
-      enabled: false
-      # -- Rely _either_ on the className or the annotation below but not both!
-      # If you want to use the className, set
-      # className: "nginx"
-      # and replace "nginx" by an Ingress controller name,
-      # examples [here](https://kubernetes.io/docs/concepts/services-networking/ingress-controllers).
-      annotations: {}
-        # kubernetes.io/ingress.class: "nginx"
-        # kubernetes.io/tls-acme: "true"
-      labels: {}
-      hosts:
-        # -- garage S3 API endpoint, to be used with awscli for example
-        - host: "s3.garage.tld"
-          paths:
-            - path: /
-              pathType: Prefix
-        # -- garage S3 API endpoint, DNS style bucket access
-        - host: "*.s3.garage.tld"
-          paths:
-            - path: /
-              pathType: Prefix
-      tls: []
-      #  - secretName: my-garage-cluster-tls
-      #    hosts:
-      #      - kubernetes.docker.internal
-    web:
-      enabled: false
-      # -- Rely _either_ on the className or the annotation below but not both!
-      # If you want to use the className, set
-      # className: "nginx"
-      # and replace "nginx" by an Ingress controller name,
-      # examples [here](https://kubernetes.io/docs/concepts/services-networking/ingress-controllers).
-      annotations: {}
-        # kubernetes.io/ingress.class: nginx
-        # kubernetes.io/tls-acme: "true"
-      labels: {}
-      hosts:
-        # --  wildcard website access with bucket name prefix
-        - host: "*.web.garage.tld"
-          paths:
-            - path: /
-              pathType: Prefix
-        # -- specific bucket access with FQDN bucket
-        - host: "mywebpage.example.com"
-          paths:
-            - path: /
-              pathType: Prefix
-      tls: []
-      #  - secretName: my-garage-cluster-tls
-      #    hosts:
-      #      - kubernetes.docker.internal
-
-resources: {}
-  # The following are indicative for a small-size deployment, for anything serious double them.
-  # limits:
-  #   cpu: 100m
-  #   memory: 1024Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 512Mi
-
-# -- Specifies a livenessProbe
-livenessProbe: {}
-  #httpGet:
-  #  path: /health
-  #  port: 3903 # or the port from garage.admin.apiBindAddr
-  #initialDelaySeconds: 5
-  #periodSeconds: 30
-# -- Specifies a readinessProbe
-readinessProbe: {}
-  #httpGet:
-  #  path: /health
-  #  port: 3903 # or the port from garage.admin.apiBindAddr
-  #initialDelaySeconds: 5
-  #periodSeconds: 30
-
-nodeSelector: {}
-
-tolerations: []
-
-affinity: {}
-
-# -- Optional priority class name to assign to the pods.
-# See https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/
-priorityClassName: ""
-
-environment: {}
-
-extraVolumes: {}
-
-extraVolumeMounts: {}
-
-monitoring:
-  metrics:
-    # -- If true, a service for monitoring is created with a prometheus.io/scrape annotation
-    enabled: true
-    serviceMonitor:
-      # -- If true, a ServiceMonitor CRD is created for a prometheus operator
-      # https://github.com/coreos/prometheus-operator
-      enabled: true
-      path: /metrics
-      #  namespace: monitoring  (defaults to use the namespace this chart is deployed to)
-      labels: {}
-      interval: 15s
-      scheme: http
-      tlsConfig: {}
-      scrapeTimeout: 10s
-      relabelings: []
-  tracing:
-    # -- specify a sink endpoint for OpenTelemetry Traces, eg. `http://localhost:4317`
-    sink: "http://k8s-monitoring-alloy-receiver.k8s-monitoring.svc.cluster.local:4317"

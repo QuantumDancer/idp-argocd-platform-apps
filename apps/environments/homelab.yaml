@@ -10,6 +10,8 @@ repos:
   userApps:
     targetRevision: development
 
+garageOperator:
+  enabled: true
 garage:
   enabled: true
 backstage:

@@ -1,0 +1,51 @@
+{{- $gc := .Values.garageCluster -}}
+apiVersion: garage.rottler.io/v1alpha1
+kind: GarageCluster
+metadata:
+  name: {{ include "garage.fullname" . }}
+  labels:
+    {{- include "garage.labels" . | nindent 4 }}
+spec:
+  replicationFactor: {{ $gc.replicationFactor }}
+  {{- if or $gc.image.repository $gc.image.tag }}
+  # Pin the Garage image; otherwise the operator picks its own tested default.
+  image:
+    {{- with $gc.image.repository }}
+    repository: {{ . | quote }}
+    {{- end }}
+    {{- with $gc.image.tag }}
+    tag: {{ . | quote }}
+    {{- end }}
+  {{- end }}
+  nodePools:
+    - name: {{ $gc.nodePool.name }}
+      replicas: {{ $gc.nodePool.replicas }}
+      storage:
+        data:
+          size: {{ $gc.nodePool.storage.data.size | quote }}
+          {{- with $gc.nodePool.storage.data.storageClass }}
+          storageClass: {{ . | quote }}
+          {{- end }}
+        meta:
+          size: {{ $gc.nodePool.storage.meta.size | quote }}
+          {{- with $gc.nodePool.storage.meta.storageClass }}
+          storageClass: {{ . | quote }}
+          {{- end }}
+      {{- with $gc.nodePool.resources }}
+      resources:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+  s3:
+    api:
+      region: {{ $gc.s3.api.region | quote }}
+      {{- with $gc.s3.api.rootDomain }}
+      rootDomain: {{ . | quote }}
+      {{- end }}
+  {{- with $gc.referencePolicy.allowedNamespaces }}
+  # Permit GarageBucket/GarageKey in these namespaces to reference this cluster.
+  referencePolicy:
+    allowedNamespaces:
+      {{- toYaml . | nindent 6 }}
+  {{- end }}
+  metrics:
+    enabled: {{ $gc.metrics.enabled }}

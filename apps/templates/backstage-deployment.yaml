@@ -6,7 +6,7 @@ metadata:
   name: backstage
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "2" # Requires ServiceMonitor CRD and external-secrets-operator app
+    argocd.argoproj.io/sync-wave: "5" # Requires external-secrets-operator + garage-operator CRDs (wave 3) and the GarageCluster (wave 4)
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:

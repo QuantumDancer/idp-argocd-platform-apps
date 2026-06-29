@@ -31,6 +31,8 @@ networkingConfig:
   enabled: false
 gatewayApiCrds:
   enabled: false
+garageOperator:
+  enabled: false
 garage:
   enabled: false
 backstage:

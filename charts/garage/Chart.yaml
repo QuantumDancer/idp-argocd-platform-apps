@@ -1,9 +1,8 @@
 apiVersion: v2
 name: garage
-description: S3-compatible object store for small self-hosted geo-distributed deployments
+description: Operator-managed Garage cluster (GarageCluster CR) plus its S3 API HTTPRoute
 type: application
-version: 0.9.3
-appVersion: "v2.3.0"
+version: 1.0.0
 home: https://garagehq.deuxfleurs.fr/
 icon: https://garagehq.deuxfleurs.fr/images/garage-logo.svg
 
