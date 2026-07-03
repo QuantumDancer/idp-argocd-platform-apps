@@ -33,6 +33,17 @@
       "platformAutomerge": true,
       "ignoreTests": false,
       "minimumReleaseAge": "3 days"
+    },
+    {
+      "description": "Do not automerge 0.x minor bumps: pre-1.0 minors are potentially breaking (Renovate classifies them as minor by field position, so the rule above would otherwise catch them)",
+      "matchManagers": [
+        "helmv3"
+      ],
+      "matchCurrentVersion": "/^0\\./",
+      "matchUpdateTypes": [
+        "minor"
+      ],
+      "automerge": false
     }
   ]
 }
