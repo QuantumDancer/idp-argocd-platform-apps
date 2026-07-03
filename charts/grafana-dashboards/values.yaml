@@ -60,6 +60,8 @@ dashboards:
       folder: "Resources / Services"
     coredns:
       folder: "Resources / Services"
+    garage:
+      folder: "Resources / Services"
 
 # Rules and alerts configuration
 rules:
