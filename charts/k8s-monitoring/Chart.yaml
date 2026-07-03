@@ -6,7 +6,7 @@ version: 0.1.0
 appVersion: "1.0"
 dependencies:
   - name: k8s-monitoring
-    version: 4.1.6
+    version: 4.1.7
     repository: https://grafana.github.io/helm-charts
   - name: alloy-mixin
     version: 0.3.2
