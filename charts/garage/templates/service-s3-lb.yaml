@@ -1,0 +1,37 @@
+{{- if .Values.service.s3.api.loadBalancer.enabled }}
+# Dedicated LoadBalancer Service for the S3 API.
+#
+# Bypasses the Cilium Gateway's Envoy L7 proxy, whose default 1 MiB
+# per_connection_buffer_limit_bytes deadlocks large S3 PUT uploads (e.g. the
+# TechDocs publish job) with no Cilium-exposed knob to raise it (upstream
+# CFP cilium#43359). LB-IPAM assigns a dedicated IP and the eBPF datapath
+# forwards straight to the pod, so flow control is native TCP with no L7 buffer.
+#
+# Plaintext only: Garage's S3 API does not terminate TLS, so this endpoint is
+# HTTP. The TLS-terminating browse path stays on the Gateway HTTPRoute.
+#
+# The selector mirrors the operator-managed garage-s3 Service: the operator
+# labels Garage pods with the GarageCluster name, which this chart sets to the
+# release fullname.
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "garage.fullname" . }}-s3-lb
+  labels:
+    {{- include "garage.labels" . | nindent 4 }}
+  annotations:
+    io.cilium/lb-ipam-ips: {{ .Values.service.s3.api.loadBalancer.ip | quote }}
+    {{- with .Values.service.s3.api.loadBalancer.hostname }}
+    external-dns.alpha.kubernetes.io/hostname: {{ . | quote }}
+    {{- end }}
+spec:
+  type: LoadBalancer
+  ports:
+    - port: {{ .Values.service.s3.api.port }}
+      targetPort: {{ .Values.service.s3.api.port }}
+      protocol: TCP
+      name: s3-api
+  selector:
+    app.kubernetes.io/instance: {{ include "garage.fullname" . }}
+    garage.rottler.io/cluster: {{ include "garage.fullname" . }}
+{{- end }}

@@ -26,6 +26,15 @@ garageCluster:
   metrics:
     enabled: true
 
+service:
+  s3:
+    api:
+      # Direct, Envoy-free endpoint for bulk S3 uploads (TechDocs publish from CI).
+      loadBalancer:
+        enabled: true
+        ip: 192.168.31.11
+        hostname: s3-direct.garage.k8s.home.rottlr.de
+
 httproute:
   s3:
     api:

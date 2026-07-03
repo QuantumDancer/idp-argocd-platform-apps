@@ -47,6 +47,21 @@ garageCluster:
     # -- If true, the operator creates a PodMonitor scraping the Garage metrics.
     enabled: false
 
+service:
+  s3:
+    api:
+      # -- Port the Garage S3 API listens on (fixed by the operator's Service).
+      port: 3900
+      # -- Dedicated LoadBalancer Service for the S3 API, bypassing the Gateway/Envoy
+      # L7 proxy whose 1 MiB per-connection buffer stalls large uploads (cilium#43359).
+      loadBalancer:
+        enabled: false
+        # -- IP requested from the Cilium LB-IPAM pool (io.cilium/lb-ipam-ips annotation).
+        ip: ""
+        # -- If set, external-dns publishes an A record for this hostname.
+        # Requires the `service` source enabled in the external-dns chart.
+        hostname: ""
+
 # Gateway API HTTPRoute fronting the S3 API endpoint.
 httproute:
   s3:

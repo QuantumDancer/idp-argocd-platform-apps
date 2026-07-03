@@ -3,6 +3,9 @@ external-dns:
     name: cloudflare
   sources:
     - gateway-httproute
+    # Publishes A records for LoadBalancer Services carrying the
+    # external-dns.alpha.kubernetes.io/hostname annotation (e.g. garage-s3-lb).
+    - service
   env:
     - name: CF_API_TOKEN
       valueFrom:
