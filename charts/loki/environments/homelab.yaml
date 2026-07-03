@@ -34,7 +34,7 @@ loki:
       retention_enabled: true
       delete_request_store: filesystem
 
-  deploymentMode: SingleBinary
+  deploymentMode: Monolithic
 
   singleBinary:
     replicas: 1
