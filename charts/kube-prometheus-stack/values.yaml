@@ -79,6 +79,16 @@ kube-prometheus-stack:
   defaultRules:
     create: false
 
+  # Helm cannot upgrade CRDs, and ArgoCD's ServerSideApply diff validates each CR against the
+  # *live* CRD schema. When a chart bump adds a field to a CR (e.g. spec.hostNetwork in v87)
+  # before the CRD teaches that field, the diff fails and blocks the sync that would apply the
+  # new CRD. This pre-upgrade hook Job applies the CRDs first, breaking that chicken-and-egg.
+  # forceConflicts lets the Job take ownership of fields ArgoCD's field manager already holds.
+  crds:
+    upgradeJob:
+      enabled: true
+      forceConflicts: true
+
 # Custom Gateway Configuration, since kube-prometheus-stack Helm chart does not support Gateway routes yet
 gateway:
   name: external
