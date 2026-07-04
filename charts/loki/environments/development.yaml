@@ -35,6 +35,10 @@ loki:
   
   ingester:
     replicas: 3
+    # Chart default is 300s, which stalls teardown: ArgoCD's cascade waits for the
+    # ingesters' full grace period and blows the root app's helm uninstall budget.
+    # Dev logs are disposable, so a short drain window is acceptable.
+    terminationGracePeriodSeconds: 60
   querier:
     replicas: 3
     maxUnavailable: 2

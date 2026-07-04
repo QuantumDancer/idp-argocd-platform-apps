@@ -37,6 +37,14 @@ kube-prometheus-stack:
       retention: 7d
       # Enable remote write receiver for Alloy to send metrics
       enableRemoteWriteReceiver: true
+      # StatefulSet PVCs are retained by default, which orphans the backing
+      # volume on teardown (the PV outlives the CSI driver and becomes an
+      # unattachable, billable EBS volume on AWS). Metrics are disposable;
+      # delete the PVC with the StatefulSet so storage is reclaimed while the
+      # CSI driver still exists.
+      persistentVolumeClaimRetentionPolicy:
+        whenDeleted: Delete
+        whenScaled: Retain
       storageSpec:
         volumeClaimTemplate:
           spec:

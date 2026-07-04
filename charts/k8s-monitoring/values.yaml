@@ -3,6 +3,21 @@
 
 # Configure with upstream k8s-monitoring chart values
 k8s-monitoring:
+  # Teardown ordering relies on ArgoCD sync-waves instead of the chart's helm
+  # hooks: every Alloy CR below carries sync-wave "1", so on app deletion ArgoCD
+  # removes the Alloys first and waits until the alloy-operator (wave 0, still
+  # running) has processed their uninstall-release finalizers before deleting
+  # the operator and the namespace.
+  #
+  # waitForAlloyRemoval is the chart's hook-based variant of the same ordering,
+  # but it deadlocks under ArgoCD: its post-install hook pins a
+  # k8s.grafana.com/finalizer on the operator Deployment that only its
+  # pre-delete hook removes, and ArgoCD v3.4's PreDelete hook execution can
+  # skip that hook under a stale cluster cache (hook creation hits
+  # AlreadyExists and is miscounted as completed), wedging the namespace.
+  alloy-operator:
+    waitForAlloyRemoval:
+      enabled: false
   # Local destinations (Prometheus and Loki running in the cluster).
   destinations:
     local-prometheus:
@@ -35,6 +50,9 @@ k8s-monitoring:
   collectors:
     # Scrapes metrics; clustered for target sharing across replicas.
     alloy-metrics:
+      # Deleted before the alloy-operator on teardown (see note above).
+      annotations:
+        argocd.argoproj.io/sync-wave: "1"
       presets:
         - clustered
         - statefulset
@@ -48,6 +66,8 @@ k8s-monitoring:
 
     # Single-replica collector for cluster events.
     alloy-singleton:
+      annotations:
+        argocd.argoproj.io/sync-wave: "1"
       presets:
         - singleton
       alloy:
@@ -60,6 +80,8 @@ k8s-monitoring:
 
     # DaemonSet reading pod and node logs from the host filesystem.
     alloy-logs:
+      annotations:
+        argocd.argoproj.io/sync-wave: "1"
       presets:
         - filesystem-log-reader
         - daemonset
@@ -76,6 +98,8 @@ k8s-monitoring:
     # Deployment receiving OTLP traces (from in-cluster apps) and Faro web
     # telemetry (from browsers) and forwarding both to Tempo/Loki.
     alloy-receiver:
+      annotations:
+        argocd.argoproj.io/sync-wave: "1"
       presets:
         - deployment
       alloy:

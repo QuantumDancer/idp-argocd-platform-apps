@@ -5,6 +5,13 @@ apiVersion: grafana.integreatly.org/v1beta1
 kind: Grafana
 metadata:
   name: grafana
+  annotations:
+    # ArgoCD deletes resources in reverse sync-wave order and waits for each wave
+    # to finish. Deleting this CR first lets grafana-operator drain the Grafana
+    # deployment/service it owns before ArgoCD removes the rest of the chart
+    # (HTTPRoute, secrets, datasources) — otherwise the operator recreates those
+    # workloads mid-cascade and the app deletion deadlocks.
+    argocd.argoproj.io/sync-wave: "1"
   labels:
     # This label enables automatic dashboard discovery
     # Any GrafanaDashboard CR with instanceSelector.matchLabels.dashboards: "grafana" will be loaded
