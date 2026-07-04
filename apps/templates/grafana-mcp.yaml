@@ -5,7 +5,10 @@ metadata:
   name: grafana-mcp
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "5" # Requires grafana
+    # Later than grafana-operator (wave 1) and the grafana instance (wave 4): the
+    # GrafanaServiceAccount CR in this chart needs both the operator's CRD and a running
+    # Grafana instance to mint its token.
+    argocd.argoproj.io/sync-wave: "5"
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
@@ -23,7 +26,10 @@ spec:
 
   destination:
     server: https://kubernetes.default.svc
-    namespace: grafana-mcp
+    # Deploys into the grafana namespace: the grafana-operator only creates a
+    # GrafanaServiceAccount (and its token secret) in the same namespace as the Grafana
+    # instance, and the pod must read that secret from its own namespace.
+    namespace: grafana
 
   syncPolicy:
     automated:

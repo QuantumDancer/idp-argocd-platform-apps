@@ -5,13 +5,25 @@ gateway:
   name: external
   namespace: gateway
 
+# Service account minted inside Grafana by the grafana-operator (GrafanaServiceAccount CR).
+# The operator writes the generated token into a Secret named `tokenSecretName` (key: token)
+# in this chart's namespace, which the MCP server then reads via grafana.apiKeySecret below.
+# role Admin: mcp-grafana exposes write tools (dashboards, alert rules, annotations, teams)
+# that require it; tighten to Editor/Viewer if only read access is ever used.
+grafanaServiceAccount:
+  instanceName: grafana
+  name: grafana-mcp
+  role: Admin
+  tokenName: mcp
+  tokenSecretName: grafana-mcp-token
+
 grafana-mcp:
   grafana:
     url: http://grafana-service.grafana.svc.cluster.local:3000
-
-  envFrom:
-    - secretRef:
-        name: grafana-mcp-credentials
+    # Rendered by the subchart into a GRAFANA_SERVICE_ACCOUNT_TOKEN env var via secretKeyRef.
+    apiKeySecret:
+      name: grafana-mcp-token
+      key: token
 
   resources:
     requests:
