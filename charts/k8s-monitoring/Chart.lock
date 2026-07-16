@@ -1,9 +1,9 @@
 dependencies:
 - name: k8s-monitoring
   repository: https://grafana.github.io/helm-charts
-  version: 4.2.0
+  version: 4.2.1
 - name: alloy-mixin
   repository: https://charts.portefaix.xyz
   version: 0.3.2
-digest: sha256:3b52cf80e035739b29839c893d6f4261e9c8458d5860ab18ba33a954fccddbf4
-generated: "2026-07-11T13:03:53.577535983Z"
+digest: sha256:97aae6b1f1cf115056ff9de1d09659a8dc28d30a91b30ce4d6d42ec9e14670ba
+generated: "2026-07-16T18:38:23.485865586Z"
