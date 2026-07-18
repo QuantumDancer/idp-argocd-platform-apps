@@ -31,6 +31,13 @@ kafka:
   # replicas on one broker:
   #   kubectl -n kafka exec platform-dual-role-0 -c kafka -- \
   #     bin/kafka-topics.sh --bootstrap-server localhost:9092 --describe
+  #
+  # The recreated topic gets a new Kafka topic ID, and Tempo's live-store caches
+  # the old one: it then hot-loops on UNKNOWN_TOPIC_ID and consumes nothing,
+  # while every other component recovers on its own via metadata refresh. Restart
+  # it after any topic recreation, or trace ingest silently stays at zero:
+  #   kubectl rollout restart statefulset/tempo-distributed-live-store -n tempo
+  #
   # Deploy Cruise Control instead if this cluster ever holds data worth keeping.
   nodePool:
     replicas: 3
