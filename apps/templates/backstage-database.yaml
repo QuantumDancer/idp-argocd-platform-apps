@@ -29,5 +29,14 @@ spec:
     automated:
       prune: true
       selfHeal: true
+    # Generous retry budget: on a fresh cluster the first syncs race operator
+    # CRDs and webhooks, and ArgoCD never re-attempts an automated sync of the
+    # same revision once retries are exhausted, so this must outlast bootstrap.
+    retry:
+      limit: 10
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 10m
     syncOptions:
       - CreateNamespace=true
