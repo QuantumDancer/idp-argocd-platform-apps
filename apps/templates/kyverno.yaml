@@ -27,6 +27,7 @@ spec:
       valueFiles:
         - values.yaml
         - environments/{{ .Values.environment }}.yaml
+      ignoreMissingValueFiles: true
 
   destination:
     server: https://kubernetes.default.svc

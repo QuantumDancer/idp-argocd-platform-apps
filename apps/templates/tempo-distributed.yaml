@@ -21,6 +21,7 @@ spec:
       valueFiles:
         - values.yaml
         - environments/{{ .Values.environment }}.yaml
+      ignoreMissingValueFiles: true
       # Unconditional: this app is already AWS-gated (tempoDistributed.enabled),
       # so the S3 params from Terraform always apply — no per-environment guard.
       parameters:

@@ -20,6 +20,7 @@ spec:
       valueFiles:
         - values.yaml
         - environments/{{ .Values.environment }}.yaml
+      ignoreMissingValueFiles: true
       {{- if ne .Values.environment "homelab" }}
       parameters:
         - name: loki.loki.storage.s3.region

@@ -20,6 +20,7 @@ spec:
       valueFiles:
         - values.yaml
         - environments/{{ .Values.environment }}.yaml
+      ignoreMissingValueFiles: true
       parameters:
         - name: environment
           value: {{ .Values.environment | quote }}
