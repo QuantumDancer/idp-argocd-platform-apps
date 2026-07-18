@@ -31,7 +31,8 @@ spec:
       offsets.topic.replication.factor: {{ .Values.kafka.replicationFactor }}
       transaction.state.log.replication.factor: {{ .Values.kafka.replicationFactor }}
       transaction.state.log.min.isr: {{ .Values.kafka.minInsyncReplicas }}
-      # Topics are declared as KafkaTopic CRs (kafka-topic.yaml), so broker-side
+      # Topics are declared as KafkaTopic CRs by their consumer apps (e.g.
+      # charts/tempo-distributed/templates/kafka-topic.yaml), so broker-side
       # auto-creation is off. It was previously on, and its default partition
       # count was the only lever over tempo-traces' shape — Tempo's client-side
       # partition preference does not survive broker auto-creation under Strimzi,
@@ -45,7 +46,9 @@ spec:
         # load-bearing — draining a second broker stops writes — and a silent
         # upstream default change would be an outage rather than a regression.
         maxUnavailable: 1
-  # The topic operator reconciles the KafkaTopic CRs in this chart. No
-  # userOperator: the plaintext internal listener has no Kafka users to manage.
+  # The topic operator reconciles KafkaTopic CRs in this namespace — consumer
+  # apps declare them cross-namespace here (see values.yaml on topic ownership).
+  # No userOperator: the plaintext internal listener has no Kafka users to
+  # manage.
   entityOperator:
     topicOperator: {}

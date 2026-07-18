@@ -29,18 +29,18 @@ tempo-distributed:
   ingest:
     kafka:
       address: platform-kafka-bootstrap.kafka.svc.cluster.local:9092
-      # The topic is declared as a KafkaTopic CR in charts/kafka
-      # (templates/kafka-topic.yaml) and reconciled by Strimzi's topic operator,
-      # so Tempo must not try to create it — broker-side auto-creation is off
-      # too, and its partition count was never controllable from here anyway.
-      # Keep name and partitions in sync with kafka's traceTopic values; the
-      # partition count must equal the block-builder and live-store replica
-      # counts (see environments/development.yaml).
+      # The topic is declared as a KafkaTopic CR in this chart
+      # (templates/kafka-topic.yaml, which reads this name) and reconciled by
+      # Strimzi's topic operator, so Tempo must not try to create it —
+      # broker-side auto-creation is off too, and its partition count was never
+      # controllable from here anyway.
       topic: tempo-traces
       auto_create_topic_enabled: false
-      # Inert while auto-creation is off, but pinned rather than left to the
-      # chart default of 3: if auto-creation is ever re-enabled, a mismatch here
-      # silently strands a block-builder/live-store replica on no partition.
+      # Doubles as the KafkaTopic CR's spec.partitions (templates/kafka-topic.yaml
+      # reads it), so the declared topic and the auto-create fallback cannot
+      # diverge. Must equal the block-builder and live-store replica counts
+      # (environments/development.yaml) — Tempo assigns one replica of each per
+      # partition.
       auto_create_topic_default_partitions: 2
 
   # RED-metrics parity with the homelab monolithic chart (charts/tempo).

@@ -30,7 +30,8 @@ tempo-distributed:
 
   # block-builder and live-store are partition-sharded, not replicated: Tempo
   # assigns one replica of each per Kafka partition, so both must equal the
-  # kafka chart's traceTopic.partitions (2). A second replica therefore halves
+  # topic's partition count (ingest.kafka.auto_create_topic_default_partitions
+  # in values.yaml), i.e. 2. A second replica therefore halves
   # the blast radius of a node loss but cannot cover for a lost peer — the
   # affected partition stalls until the pod reschedules and replays from Kafka.
   # That is why the hard anti-affinity below matters more here than elsewhere,

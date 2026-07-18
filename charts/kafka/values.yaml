@@ -49,17 +49,13 @@ kafka:
   replicationFactor: 3
   minInsyncReplicas: 2
 
-  # The trace topic Tempo's distributors write to and its block-builders and
-  # live-stores read from (kafka-topic.yaml). The name must match
-  # tempo-distributed's ingest.kafka.topic, and partitions must equal both the
-  # blockBuilder and liveStore replica counts in
-  # charts/tempo-distributed/environments/development.yaml — Tempo assigns one
-  # replica of each per partition. Partition count is independent of
-  # nodePool.replicas: partitions shard the topic, replicationFactor copies it.
-  traceTopic:
-    name: tempo-traces
-    partitions: 2
-
+  # Topics are not declared here: this chart only provides the cluster, and
+  # each consumer app owns its topics as cross-namespace KafkaTopic CRs (e.g.
+  # charts/tempo-distributed/templates/kafka-topic.yaml). Consumer apps sit at
+  # higher sync-waves than this one, which is what keeps the topic operator
+  # alive to process KafkaTopic finalizers during the teardown cascade. Those
+  # CRs omit replicas/min.insync.replicas, so the broker defaults above size
+  # every consumer topic — changing them here changes new topics everywhere.
   resources:
     requests:
       memory: 1Gi

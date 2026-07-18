@@ -1,0 +1,30 @@
+# The trace topic lives in this chart, not charts/kafka, because the consumer
+# owns its topics — the kafka app only provides the cluster. That ownership is
+# also what makes teardown ordering work: this app (sync-wave 3) is cascade-
+# deleted before kafka (wave 2), so Strimzi's entity/topic operator is still
+# alive to process the strimzi.io/topic-operator finalizer. When the topic was
+# part of the kafka app it was deleted in the same wave batch as the Kafka CR,
+# the operator died first, and the orphaned finalizer deadlocked the whole
+# root-app cascade (teardown 2026-07-18).
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaTopic
+metadata:
+  # Single source of truth for the topic name: the same value Tempo's ingest
+  # path consumes, so the producer/consumer config and the CR cannot drift.
+  name: {{ (index .Values "tempo-distributed").ingest.kafka.topic }}
+  # Cross-namespace on purpose: Strimzi's topic operator only watches the Kafka
+  # cluster's own namespace, and the platform AppProject permits all
+  # destination namespaces.
+  namespace: kafka
+  labels:
+    # Selects the entityOperator.topicOperator of the "platform" Kafka CR
+    # (charts/kafka/templates/kafka.yaml) as this topic's reconciler.
+    strimzi.io/cluster: platform
+spec:
+  # Single-sourced like the name: the pinned auto-create default is the one
+  # partition count Tempo's own config carries, so the CR and the fallback
+  # cannot diverge. No replicas / min.insync.replicas: when absent, the topic
+  # inherits the broker defaults charts/kafka renders from its
+  # replicationFactor / minInsyncReplicas, keeping durability sizing in the
+  # chart that owns the brokers.
+  partitions: {{ (index .Values "tempo-distributed").ingest.kafka.auto_create_topic_default_partitions }}
