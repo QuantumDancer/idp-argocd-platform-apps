@@ -1,0 +1,33 @@
+apiVersion: kafka.strimzi.io/v1
+kind: Kafka
+metadata:
+  name: platform
+  annotations:
+    # KRaft mode with node pools: topology comes from the KafkaNodePool
+    # (kafka-node-pool.yaml), not from spec.kafka.replicas/storage (which are
+    # ignored in this mode).
+    strimzi.io/kraft: enabled
+    strimzi.io/node-pools: enabled
+spec:
+  kafka:
+    version: {{ .Values.kafka.version }}
+    metadataVersion: {{ .Values.kafka.metadataVersion }}
+    listeners:
+      # Plaintext internal listener only — reachable in-cluster at
+      # platform-kafka-bootstrap.kafka.svc.cluster.local:9092. No external/TLS
+      # listener: the only client is tempo-distributed in the same cluster.
+      - name: plain
+        port: 9092
+        type: internal
+        tls: false
+    config:
+      default.replication.factor: {{ .Values.kafka.replicationFactor }}
+      min.insync.replicas: {{ .Values.kafka.minInsyncReplicas }}
+      offsets.topic.replication.factor: {{ .Values.kafka.replicationFactor }}
+      transaction.state.log.replication.factor: {{ .Values.kafka.replicationFactor }}
+      transaction.state.log.min.isr: {{ .Values.kafka.minInsyncReplicas }}
+      # Tempo creates its trace topic on first connect with the partition count it
+      # needs, so no KafkaTopic CR / entity operator is required for the write path.
+      auto.create.topics.enable: true
+  # No entityOperator: topics are auto-created and there are no Kafka users to
+  # manage. Add topicOperator/userOperator here if declarative topics are wanted.

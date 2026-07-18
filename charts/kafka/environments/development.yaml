@@ -1,0 +1,2 @@
+# Development: single-node sizing from values.yaml applies unchanged.
+# No overrides needed (app is gated to development only).

@@ -10,6 +10,13 @@ k8s-monitoring:
   cluster:
     name: development
 
+  # AWS runs distributed Tempo, so traces go to its distributor. destinations is
+  # a map, so this deep-merges onto the local-tempo entry in values.yaml — the
+  # name stays "local-tempo", keeping the Faro local_tempo processor refs intact.
+  destinations:
+    local-tempo:
+      url: http://tempo-distributed-distributor.tempo.svc.cluster.local:4317
+
   # Keep the logs DaemonSet off Fargate nodes; they have no host filesystem to
   # read logs from. The node-exporter telemetry service already excludes Fargate.
   collectors:

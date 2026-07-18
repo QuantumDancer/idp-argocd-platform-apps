@@ -1,0 +1,42 @@
+# Development sizing: ~12 pods, ~1.5 vCPU / 4.5Gi requests + Kafka.
+# https://github.com/grafana/tempo/tree/main/operations/helm/charts/tempo-distributed
+tempo-distributed:
+  # Small baseline request applied to every component unless it overrides it.
+  defaults:
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+
+  distributor:
+    replicas: 2
+
+  # block-builder and live-store each run one replica per Kafka partition, so
+  # both must equal ingest.kafka.auto_create_topic_default_partitions (2).
+  blockBuilder:
+    replicas: 2
+  liveStore:
+    replicas: 2
+
+  querier:
+    replicas: 2
+  queryFrontend:
+    replicas: 1
+
+  # backend-scheduler is a singleton StatefulSet (no replicas knob); the worker
+  # pool that executes its compaction jobs is scaled here.
+  backendWorker:
+    replicas: 1
+  # 7-day trace retention (chart default is 48h).
+  backendScheduler:
+    config:
+      provider:
+        compaction:
+          compaction:
+            block_retention: 168h
+
+  metricsGenerator:
+    replicas: 1
+
+  memcached:
+    replicas: 1

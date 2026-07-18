@@ -1,12 +1,12 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/argoproj.io/application_v1alpha1.json
-{{- if .Values.tempo.enabled }}
+{{- if .Values.strimziKafkaOperator.enabled }}
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: tempo
+  name: strimzi-kafka-operator
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "2"
+    argocd.argoproj.io/sync-wave: "1" # CRD provider for Kafka resources
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
@@ -15,16 +15,16 @@ spec:
   source:
     repoURL: {{ .Values.repos.platformApps.repoURL }}
     targetRevision: {{ .Values.repos.platformApps.targetRevision }}
-    path: charts/tempo
+    path: charts/strimzi-kafka-operator
     helm:
-      releaseName: tempo
+      releaseName: strimzi-kafka-operator
       valueFiles:
         - values.yaml
         - environments/{{ .Values.environment }}.yaml
 
   destination:
     server: https://kubernetes.default.svc
-    namespace: tempo
+    namespace: strimzi-system
 
   syncPolicy:
     automated:
@@ -32,5 +32,5 @@ spec:
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
-      - ServerSideApply=true
+      - ServerSideApply=true # CRDs exceed the client-side apply annotation size limit
 {{- end }}

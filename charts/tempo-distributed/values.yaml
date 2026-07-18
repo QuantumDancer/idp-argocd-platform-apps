@@ -1,0 +1,58 @@
+# https://github.com/grafana/tempo/tree/main/operations/helm/charts/tempo-distributed
+tempo-distributed:
+  # Fixed SA name so the EKS Pod Identity association (ns tempo, SA tempo) is
+  # deterministic instead of depending on the chart's generated fullname.
+  serviceAccount:
+    name: tempo
+
+  reportingEnabled: false
+
+  traces:
+    otlp:
+      grpc:
+        enabled: true # ingest from the Alloy local-tempo destination
+      http:
+        enabled: true
+
+  # S3 via the AWS default credential chain (EKS Pod Identity — no static keys).
+  # bucket/region/endpoint are overwritten by root-app parameters from Terraform.
+  storage:
+    trace:
+      backend: s3
+      s3:
+        bucket: tempo-traces
+        region: eu-central-1
+        endpoint: s3.eu-central-1.amazonaws.com
+
+  # Tempo 3 write path: distributor -> Kafka -> block-builder/live-store.
+  # Broker: the Strimzi-managed cluster in charts/kafka.
+  ingest:
+    kafka:
+      address: platform-kafka-bootstrap.kafka.svc.cluster.local:9092
+      topic: tempo-traces
+      auto_create_topic_enabled: true
+      # Block-builder and live-store replica counts must equal this value
+      # (see environments/development.yaml).
+      auto_create_topic_default_partitions: 2
+
+  # RED-metrics parity with the homelab monolithic chart (charts/tempo).
+  metricsGenerator:
+    enabled: true
+    config:
+      processor:
+        service_graphs:
+          wait: 10s
+          max_items: 10000
+      storage:
+        remote_write:
+          - url: http://kube-prometheus-stack-prometheus.kube-prometheus-stack.svc.cluster.local:9090/api/v1/write
+            send_exemplars: true
+
+  # The distributed chart additionally requires activating the processors via
+  # per-tenant overrides — enabling metricsGenerator alone is not sufficient.
+  overrides:
+    defaults:
+      metrics_generator:
+        processors:
+          - service-graphs
+          - span-metrics

@@ -1,12 +1,12 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/argoproj.io/application_v1alpha1.json
-{{- if .Values.tempo.enabled }}
+{{- if .Values.kafka.enabled }}
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: tempo
+  name: kafka
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "2"
+    argocd.argoproj.io/sync-wave: "2" # Requires strimzi operator CRDs + controller (wave 1)
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
@@ -15,16 +15,16 @@ spec:
   source:
     repoURL: {{ .Values.repos.platformApps.repoURL }}
     targetRevision: {{ .Values.repos.platformApps.targetRevision }}
-    path: charts/tempo
+    path: charts/kafka
     helm:
-      releaseName: tempo
+      releaseName: kafka
       valueFiles:
         - values.yaml
         - environments/{{ .Values.environment }}.yaml
 
   destination:
     server: https://kubernetes.default.svc
-    namespace: tempo
+    namespace: kafka
 
   syncPolicy:
     automated:

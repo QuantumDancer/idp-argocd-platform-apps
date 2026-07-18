@@ -1,0 +1,5 @@
+# https://strimzi.io/docs/operators/latest/deploying
+strimzi-kafka-operator:
+  # Operator lives in strimzi-system; the platform Kafka cluster lives in the
+  # kafka namespace (charts/kafka), so the operator must watch beyond its own ns.
+  watchAnyNamespace: true

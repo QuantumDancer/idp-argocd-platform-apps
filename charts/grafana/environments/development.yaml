@@ -2,6 +2,10 @@ grafana:
   hostname: grafana.dev.idp.rottlr.de
   rootUrl: https://grafana.dev.idp.rottlr.de
 
+  # AWS runs distributed Tempo; query traces via its query-frontend. Datasource
+  # uid stays "tempo", so the Loki derivedFields trace link keeps working.
+  tempoDatasourceUrl: http://tempo-distributed-query-frontend.tempo.svc.cluster.local:3200
+
   auth:
     provider: generic_oauth
     genericOauth:

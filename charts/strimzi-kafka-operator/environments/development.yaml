@@ -1,0 +1,2 @@
+# Development: operator settings from values.yaml apply unchanged.
+# No overrides needed (app is gated to development only).

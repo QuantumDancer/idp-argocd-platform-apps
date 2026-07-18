@@ -1,0 +1,28 @@
+# Platform Kafka cluster, managed by the Strimzi operator (charts/strimzi-kafka-operator).
+# Named "platform" so the bootstrap service resolves to
+# platform-kafka-bootstrap.kafka.svc.cluster.local:9092 (consumed by tempo-distributed).
+kafka:
+  # Kafka version and its KRaft metadata version must both be supported by the
+  # pinned Strimzi release (1.1.0 supports 4.2.0/4.2.1/4.3.0; 4.3.0 is its default).
+  version: 4.3.0
+  metadataVersion: 4.3-IV0
+
+  # Single dual-role (controller+broker) node with replication factor 1.
+  # Acceptable here because Kafka is only a transient trace-transport buffer:
+  # durable data lands in S3 via the Tempo block-builder, so a broker loss costs
+  # at most the in-flight spans, not stored traces. Scale-up path for HA: raise
+  # nodePool.replicas to >=3 and the *.replication.factor / min.insync.replicas
+  # config values below to match.
+  nodePool:
+    replicas: 1
+    storageSize: 10Gi
+
+  replicationFactor: 1
+  minInsyncReplicas: 1
+
+  resources:
+    requests:
+      memory: 1Gi
+      cpu: 250m
+    limits:
+      memory: 2Gi

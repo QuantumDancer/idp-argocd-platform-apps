@@ -1,6 +1,10 @@
 grafana:
   hostname: grafana.k8s.home.rottlr.de
 
+  # Tempo query endpoint for the datasource. Default targets the monolithic tempo
+  # chart (homelab); AWS overrides it to the distributed query-frontend.
+  tempoDatasourceUrl: http://tempo.tempo.svc.cluster.local:3200
+
   # External URL Grafana is reached at. Must be set whenever SSO is enabled so the
   # OAuth redirect_uri matches the address the browser used (TLS is terminated at the
   # Gateway, so Grafana cannot infer the public https URL on its own).

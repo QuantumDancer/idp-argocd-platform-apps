@@ -19,10 +19,11 @@ repos:
     repoURL: https://gitlab.home.rottlr.de/idp/platform/idp-argocd-user-apps.git
     targetRevision: main
 
-# AWS / Loki S3 storage (set via Terraform for AWS environments)
+# AWS S3 storage for Loki and Tempo (set via Terraform for AWS environments)
 awsRegion: ""
 lokiStorageBucketNameChunks: ""
 lokiStorageBucketNameRuler: ""
+tempoStorageBucketName: ""
 
 # Applications
 longhorn:
@@ -38,4 +39,14 @@ garage:
 backstage:
   enabled: false
 dex:
+  enabled: false
+# Tracing: monolithic tempo on homelab, distributed tempo-distributed (+ its
+# Kafka write path via Strimzi) on AWS. Each environment enables exactly one.
+tempo:
+  enabled: false
+tempoDistributed:
+  enabled: false
+strimziKafkaOperator:
+  enabled: false
+kafka:
   enabled: false

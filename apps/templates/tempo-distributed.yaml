@@ -1,12 +1,12 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/argoproj.io/application_v1alpha1.json
-{{- if .Values.tempo.enabled }}
+{{- if .Values.tempoDistributed.enabled }}
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: tempo
+  name: tempo-distributed
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "2"
+    argocd.argoproj.io/sync-wave: "3" # Requires kafka (wave 2); OTLP senders retry
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
@@ -15,12 +15,21 @@ spec:
   source:
     repoURL: {{ .Values.repos.platformApps.repoURL }}
     targetRevision: {{ .Values.repos.platformApps.targetRevision }}
-    path: charts/tempo
+    path: charts/tempo-distributed
     helm:
-      releaseName: tempo
+      releaseName: tempo-distributed
       valueFiles:
         - values.yaml
         - environments/{{ .Values.environment }}.yaml
+      # Unconditional: this app is already AWS-gated (tempoDistributed.enabled),
+      # so the S3 params from Terraform always apply — no per-environment guard.
+      parameters:
+        - name: tempo-distributed.storage.trace.s3.region
+          value: {{ .Values.awsRegion | quote }}
+        - name: tempo-distributed.storage.trace.s3.endpoint
+          value: s3.{{ .Values.awsRegion }}.amazonaws.com
+        - name: tempo-distributed.storage.trace.s3.bucket
+          value: {{ .Values.tempoStorageBucketName | quote }}
 
   destination:
     server: https://kubernetes.default.svc

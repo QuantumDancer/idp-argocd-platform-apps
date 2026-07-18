@@ -1,0 +1,23 @@
+# apiVersion kafka.strimzi.io/v1: the only version served by the pinned Strimzi
+# 1.1.0 CRDs (v1beta2 was removed in the 1.x line).
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaNodePool
+metadata:
+  name: dual-role
+  labels:
+    # Binds this pool to the Kafka CR named "platform" (kafka.yaml).
+    strimzi.io/cluster: platform
+spec:
+  replicas: {{ .Values.kafka.nodePool.replicas }}
+  # Dual-role: one node acts as both KRaft controller and broker. Split into
+  # dedicated controller and broker pools when scaling to an HA topology.
+  roles:
+    - controller
+    - broker
+  storage:
+    type: persistent-claim
+    size: {{ .Values.kafka.nodePool.storageSize }}
+    # Reclaim the PVC on teardown — trace buffer data is disposable.
+    deleteClaim: true
+  resources:
+    {{- toYaml .Values.kafka.resources | nindent 4 }}
