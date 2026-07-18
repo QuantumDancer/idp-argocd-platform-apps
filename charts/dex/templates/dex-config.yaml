@@ -48,7 +48,13 @@ spec:
     remoteRef:
       key: {{ .Values.config.samlVaultPath }}
       property: saml-sso-url
+      conversionStrategy: Default
+      decodingStrategy: None
+      metadataPolicy: None
   - secretKey: caData
     remoteRef:
       key: {{ .Values.config.samlVaultPath }}
       property: saml-ca-data
+      conversionStrategy: Default
+      decodingStrategy: None
+      metadataPolicy: None
