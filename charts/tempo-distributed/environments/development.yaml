@@ -1,32 +1,99 @@
-# Development sizing: ~12 pods, ~1.5 vCPU / 4.5Gi requests + Kafka.
+# Development sizing: 17 pods requesting 750m CPU / 1.9Gi memory (7.5Gi of
+# memory limits), plus the 3-node Kafka cluster in charts/kafka.
 # https://github.com/grafana/tempo/tree/main/operations/helm/charts/tempo-distributed
+#
+# This cluster is spot-only with Karpenter consolidating every 2m, so the sizing
+# goal here is survivability rather than throughput: every component runs >=2
+# replicas on distinct nodes behind a PodDisruptionBudget. Without the PDBs,
+# consolidation is free to evict every replica of a component at once; without
+# the hard anti-affinity below, it packs them onto one node in the first place
+# (observed pre-change: 11 of 13 Tempo pods on a single spot node, including
+# both live-store and both block-builder replicas).
 tempo-distributed:
   # Small baseline request applied to every component unless it overrides it.
+  # Memory gets a limit and CPU deliberately does not, per the repo convention.
+  # 512Mi is ~15x observed steady-state usage (14-33Mi across all components),
+  # so it caps a runaway without threatening the live-store's ingest buffer.
   defaults:
     resources:
       requests:
         cpu: 50m
         memory: 128Mi
+      limits:
+        memory: 512Mi
 
   distributor:
     replicas: 2
+    podDisruptionBudget:
+      enabled: true
+    maxUnavailable: 1
 
-  # block-builder and live-store each run one replica per Kafka partition, so
-  # both must equal ingest.kafka.auto_create_topic_default_partitions (2).
+  # block-builder and live-store are partition-sharded, not replicated: Tempo
+  # assigns one replica of each per Kafka partition, so both must equal the
+  # kafka chart's traceTopic.partitions (2). A second replica therefore halves
+  # the blast radius of a node loss but cannot cover for a lost peer — the
+  # affected partition stalls until the pod reschedules and replays from Kafka.
+  # That is why the hard anti-affinity below matters more here than elsewhere,
+  # and why durability is Kafka's job (charts/kafka), not theirs.
+  #
+  # Upstream ships only *preferred* hostname anti-affinity for these two (they
+  # are StatefulSets; the Deployments already get *required*), which is what let
+  # them collapse onto one node under consolidation pressure. Override to
+  # required. Zone spread stays ScheduleAnyway from the chart default: with 2
+  # replicas over 3 AZs, DoNotSchedule would leave a pod Pending during a
+  # zone-wide spot shortage.
   blockBuilder:
     replicas: 2
+    affinity: |
+      podAntiAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchLabels:
+                {{- include "tempo.selectorLabels" (dict "ctx" . "component" "block-builder") | nindent 10 }}
+            topologyKey: kubernetes.io/hostname
   liveStore:
     replicas: 2
+    affinity: |
+      podAntiAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchLabels:
+                {{- include "tempo.selectorLabels" (dict "ctx" . "component" "live-store") | nindent 10 }}
+            topologyKey: kubernetes.io/hostname
 
   querier:
     replicas: 2
+    podDisruptionBudget:
+      enabled: true
+    maxUnavailable: 1
   queryFrontend:
-    replicas: 1
+    replicas: 2
+    podDisruptionBudget:
+      enabled: true
+    maxUnavailable: 1
 
-  # backend-scheduler is a singleton StatefulSet (no replicas knob); the worker
-  # pool that executes its compaction jobs is scaled here.
+  # backend-scheduler is a singleton StatefulSet (no replicas knob upstream);
+  # losing it pauses compaction scheduling until it reschedules, which is
+  # tolerable. Its worker pool is scaled and spread here. backend-worker is a
+  # StatefulSet, so it needs the same preferred -> required override as the two
+  # components above. Note that podDisruptionBudget.enabled and maxUnavailable
+  # are *required* for it: upstream references both in
+  # templates/backend-worker/poddisruptionbudget-backend-worker.yaml but, unlike
+  # every other component, defines neither in its values.yaml — and Helm's `and`
+  # evaluates all arguments eagerly, so leaving them unset nil-pointers as soon
+  # as replicas > 1.
   backendWorker:
-    replicas: 1
+    replicas: 2
+    podDisruptionBudget:
+      enabled: true
+    maxUnavailable: 1
+    affinity: |
+      podAntiAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchLabels:
+                {{- include "tempo.selectorLabels" (dict "ctx" . "component" "backend-worker") | nindent 10 }}
+            topologyKey: kubernetes.io/hostname
   # 7-day trace retention (chart default is 48h).
   backendScheduler:
     config:
@@ -36,7 +103,52 @@ tempo-distributed:
             block_retention: 168h
 
   metricsGenerator:
-    replicas: 1
+    replicas: 2
+    podDisruptionBudget:
+      enabled: true
+    maxUnavailable: 1
 
   memcached:
-    replicas: 1
+    replicas: 2
+    podDisruptionBudget:
+      enabled: true
+    maxUnavailable: 1
+
+  # block-builder and live-store ship no PDB template at all upstream, so theirs
+  # are declared here and rendered through the chart's extraObjects passthrough
+  # (templates/extra-manifests.yaml, which tpl's each entry against the root
+  # context).
+  #
+  # backend-scheduler deliberately gets none. A singleton has no useful PDB:
+  # maxUnavailable 1 computes disruptionsAllowed = 1, exactly the same as no PDB
+  # at all, while minAvailable 1 computes 0 and blocks every voluntary eviction
+  # forever — which on a spot node that is being reclaimed anyway just stalls the
+  # drain without saving the pod. Its availability gap is real and unfixable at
+  # this layer; it needs an upstream replicas knob.
+  extraObjects:
+    - |
+      apiVersion: policy/v1
+      kind: PodDisruptionBudget
+      metadata:
+        name: {{ include "tempo.resourceName" (dict "ctx" . "component" "block-builder") }}
+        namespace: {{ .Release.Namespace }}
+        labels:
+          {{- include "tempo.labels" (dict "ctx" . "component" "block-builder") | nindent 4 }}
+      spec:
+        selector:
+          matchLabels:
+            {{- include "tempo.selectorLabels" (dict "ctx" . "component" "block-builder") | nindent 6 }}
+        maxUnavailable: 1
+    - |
+      apiVersion: policy/v1
+      kind: PodDisruptionBudget
+      metadata:
+        name: {{ include "tempo.resourceName" (dict "ctx" . "component" "live-store") }}
+        namespace: {{ .Release.Namespace }}
+        labels:
+          {{- include "tempo.labels" (dict "ctx" . "component" "live-store") | nindent 4 }}
+      spec:
+        selector:
+          matchLabels:
+            {{- include "tempo.selectorLabels" (dict "ctx" . "component" "live-store") | nindent 6 }}
+        maxUnavailable: 1

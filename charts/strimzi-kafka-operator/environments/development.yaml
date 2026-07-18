@@ -1,2 +1,18 @@
-# Development: operator settings from values.yaml apply unchanged.
-# No overrides needed (app is gated to development only).
+# Development runs on spot-only nodes with Karpenter consolidation, so the
+# operator gets the same 2-replica + PDB treatment as the other operators here
+# (cert-manager, kyverno, external-secrets-operator). The upstream chart enables
+# leader election by default, so the second replica stands by rather than
+# double-reconciling. A stalled operator does not stop trace ingest, but it does
+# stall broker rollouts and KafkaTopic reconciliation until it is rescheduled.
+strimzi-kafka-operator:
+  replicas: 2
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 1
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - topologyKey: kubernetes.io/hostname
+          labelSelector:
+            matchLabels:
+              name: strimzi-cluster-operator

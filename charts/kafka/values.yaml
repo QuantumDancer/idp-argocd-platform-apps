@@ -7,22 +7,51 @@ kafka:
   version: 4.3.0
   metadataVersion: 4.3-IV0
 
-  # Single dual-role (controller+broker) node with replication factor 1.
-  # Acceptable here because Kafka is only a transient trace-transport buffer:
-  # durable data lands in S3 via the Tempo block-builder, so a broker loss costs
-  # at most the in-flight spans, not stored traces. Scale-up path for HA: raise
-  # nodePool.replicas to >=3 and the *.replication.factor / min.insync.replicas
-  # config values below to match.
+  # Three dual-role (controller+broker) nodes: the smallest KRaft topology that
+  # keeps a controller quorum after losing one node. The cluster is spot-only and
+  # Karpenter consolidates every 2m, so node loss is routine rather than
+  # exceptional. Kafka is only a transient trace buffer — durable data lands in
+  # S3 via the Tempo block-builder — but a single broker still means trace ingest
+  # stops outright until a replacement node is provisioned *and* its AZ-pinned
+  # gp3 PVC reattaches, which is the failure this topology avoids.
+  #
+  # MIGRATION: growing this pool does NOT replicate topics that already exist.
+  # Kafka never rebalances existing partitions onto new brokers, and Strimzi's
+  # topic operator cannot raise an existing topic's replication factor without
+  # Cruise Control (strimzi/proposals #066), which this chart does not deploy.
+  # That applies to the internal __consumer_offsets too, which is created at
+  # whatever the pool size was on first boot and cannot simply be deleted.
+  # A cluster left in that state keeps every partition on broker 0, i.e. exactly
+  # the single point of failure this topology is meant to remove.
+  #
+  # Because storage is deleteClaim: true and every topic here is a disposable
+  # trace buffer, the supported migration is to delete the Kafka CR and let
+  # ArgoCD recreate it, so all topics — internal ones included — are created
+  # fresh against the 3-node pool. Verify afterwards that no topic reports all
+  # replicas on one broker:
+  #   kubectl -n kafka exec platform-dual-role-0 -c kafka -- \
+  #     bin/kafka-topics.sh --bootstrap-server localhost:9092 --describe
+  # Deploy Cruise Control instead if this cluster ever holds data worth keeping.
   nodePool:
-    replicas: 1
+    replicas: 3
     storageSize: 10Gi
 
-  replicationFactor: 1
-  minInsyncReplicas: 1
+  # min.insync.replicas 2 (of 3) keeps writes durable against one node loss while
+  # still accepting writes during it; 3 would stall ingest whenever any node is
+  # being replaced, which on spot is most of the time.
+  replicationFactor: 3
+  minInsyncReplicas: 2
 
-  # Broker default for auto-created topics. Keep in sync with tempo-distributed's
-  # ingest.kafka.auto_create_topic_default_partitions.
-  defaultTopicPartitions: 2
+  # The trace topic Tempo's distributors write to and its block-builders and
+  # live-stores read from (kafka-topic.yaml). The name must match
+  # tempo-distributed's ingest.kafka.topic, and partitions must equal both the
+  # blockBuilder and liveStore replica counts in
+  # charts/tempo-distributed/environments/development.yaml — Tempo assigns one
+  # replica of each per partition. Partition count is independent of
+  # nodePool.replicas: partitions shard the topic, replicationFactor copies it.
+  traceTopic:
+    name: tempo-traces
+    partitions: 2
 
   resources:
     requests:

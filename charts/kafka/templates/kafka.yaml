@@ -20,21 +20,32 @@ spec:
         port: 9092
         type: internal
         tls: false
+    # Places each partition replica in a different AZ by deriving broker.rack from
+    # the node's zone label. Without it Strimzi spreads replicas across brokers
+    # but is blind to zones, so all three copies of a partition can share one AZ.
+    rack:
+      topologyKey: topology.kubernetes.io/zone
     config:
       default.replication.factor: {{ .Values.kafka.replicationFactor }}
       min.insync.replicas: {{ .Values.kafka.minInsyncReplicas }}
       offsets.topic.replication.factor: {{ .Values.kafka.replicationFactor }}
       transaction.state.log.replication.factor: {{ .Values.kafka.replicationFactor }}
       transaction.state.log.min.isr: {{ .Values.kafka.minInsyncReplicas }}
-      # Tempo's trace topic is auto-created by the broker on first connect, so no
-      # KafkaTopic CR / entity operator is required for the write path. The broker
-      # default partition count must match tempo-distributed's
-      # ingest.kafka.auto_create_topic_default_partitions (and thus its
-      # block-builder/live-store replica counts): Tempo's client-side partition
-      # preference does not survive broker auto-creation under Strimzi, which
-      # owns the broker config (observed on first rollout: topic came up with 1
-      # partition, leaving the second consumer of each pair unassigned).
-      auto.create.topics.enable: true
-      num.partitions: {{ .Values.kafka.defaultTopicPartitions }}
-  # No entityOperator: topics are auto-created and there are no Kafka users to
-  # manage. Add topicOperator/userOperator here if declarative topics are wanted.
+      # Topics are declared as KafkaTopic CRs (kafka-topic.yaml), so broker-side
+      # auto-creation is off. It was previously on, and its default partition
+      # count was the only lever over tempo-traces' shape — Tempo's client-side
+      # partition preference does not survive broker auto-creation under Strimzi,
+      # which owns the broker config. That cost a rollout where the topic came up
+      # with 1 partition and left the second block-builder/live-store of each pair
+      # unassigned. Declaring the topic removes the guesswork entirely.
+      auto.create.topics.enable: false
+    template:
+      podDisruptionBudget:
+        # Already Strimzi's default; pinned because min.insync.replicas=2 makes it
+        # load-bearing — draining a second broker stops writes — and a silent
+        # upstream default change would be an outage rather than a regression.
+        maxUnavailable: 1
+  # The topic operator reconciles the KafkaTopic CRs in this chart. No
+  # userOperator: the plaintext internal listener has no Kafka users to manage.
+  entityOperator:
+    topicOperator: {}

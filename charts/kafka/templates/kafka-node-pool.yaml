@@ -9,11 +9,36 @@ metadata:
     strimzi.io/cluster: platform
 spec:
   replicas: {{ .Values.kafka.nodePool.replicas }}
-  # Dual-role: one node acts as both KRaft controller and broker. Split into
-  # dedicated controller and broker pools when scaling to an HA topology.
+  # Dual-role: each node acts as both KRaft controller and broker. Split into
+  # dedicated controller and broker pools if brokers ever need to scale
+  # independently of the controller quorum.
   roles:
     - controller
     - broker
+  template:
+    pod:
+      affinity:
+        podAntiAffinity:
+          # Required, not preferred: co-locating brokers on a spot node collapses
+          # the KRaft quorum and every partition replica in one reclaim. Three
+          # brokers on a 9-node cluster leaves ample room for a hard constraint.
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - topologyKey: kubernetes.io/hostname
+              labelSelector:
+                matchLabels:
+                  strimzi.io/cluster: platform
+                  strimzi.io/pool-name: dual-role
+      # Zone spread is ScheduleAnyway so a zone-wide spot shortage degrades
+      # placement instead of leaving a broker Pending; rack awareness
+      # (kafka.yaml) already handles replica placement given the zones we get.
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              strimzi.io/cluster: platform
+              strimzi.io/pool-name: dual-role
   storage:
     type: persistent-claim
     size: {{ .Values.kafka.nodePool.storageSize }}
