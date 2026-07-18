@@ -325,8 +325,8 @@ EOF
 
 **Git Repository Structure**:
 
-- Main branch for production deployments
-- ArgoCD tracks `main` branch with automated sync, prune, and self-heal enabled
+- ArgoCD tracks `development` branch for `homelab` and `dev` environment. All development should be done on `development` branch.
+- Prod cluster (not yet created) will track `main` branch.
 
 **Ignored Files**:
 
