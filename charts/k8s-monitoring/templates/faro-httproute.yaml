@@ -10,6 +10,11 @@ kind: HTTPRoute
 metadata:
   name: faro-receiver
   namespace: {{ $.Release.Namespace }}
+  annotations:
+    # Wave 2, after the Alloy CRs (wave 1, set in values.yaml): the route's
+    # health check fails until the alloy-receiver service exists, which
+    # deadlocks the initial sync on a fresh cluster if it lands before them.
+    argocd.argoproj.io/sync-wave: "2"
 spec:
   hostnames:
     - {{ required "global.faro.hostname must be set when global.faro.enabled" .hostname }}

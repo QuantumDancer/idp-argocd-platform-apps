@@ -2,6 +2,13 @@ apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDatasource
 metadata:
   name: prometheus
+  annotations:
+    # Wave 2, after the Grafana instance (wave 1): the datasource health check
+    # fails with "can't find matching grafana instance" until the instance
+    # exists, which deadlocks the initial sync on a fresh cluster if both land
+    # in the same wave. Reverse-order deletion also removes datasources while
+    # the instance is still alive to process their finalizers.
+    argocd.argoproj.io/sync-wave: "2"
 spec:
   instanceSelector:
     matchLabels:

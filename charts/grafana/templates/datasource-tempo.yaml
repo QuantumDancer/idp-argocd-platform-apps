@@ -2,6 +2,9 @@ apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDatasource
 metadata:
   name: tempo
+  annotations:
+    # Wave 2, after the Grafana instance (wave 1) — see datasource-prometheus.yaml.
+    argocd.argoproj.io/sync-wave: "2"
 spec:
   instanceSelector:
     matchLabels:

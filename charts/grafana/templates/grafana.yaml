@@ -7,10 +7,12 @@ metadata:
   name: grafana
   annotations:
     # ArgoCD deletes resources in reverse sync-wave order and waits for each wave
-    # to finish. Deleting this CR first lets grafana-operator drain the Grafana
-    # deployment/service it owns before ArgoCD removes the rest of the chart
-    # (HTTPRoute, secrets, datasources) — otherwise the operator recreates those
-    # workloads mid-cascade and the app deletion deadlocks.
+    # to finish. Deleting this CR before the secrets (wave 0) lets grafana-operator
+    # drain the Grafana deployment/service it owns before ArgoCD removes the rest
+    # of the chart — otherwise the operator recreates those workloads mid-cascade
+    # and the app deletion deadlocks. Dependents whose health requires a running
+    # instance (datasources, HTTPRoute) sit at wave 2, or the initial sync on a
+    # fresh cluster deadlocks the other way around.
     argocd.argoproj.io/sync-wave: "1"
   labels:
     # This label enables automatic dashboard discovery

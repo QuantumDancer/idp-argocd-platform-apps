@@ -3,6 +3,11 @@ kind: HTTPRoute
 metadata:
   name: grafana
   namespace: {{ .Release.Namespace }}
+  annotations:
+    # Wave 2, after the Grafana instance (wave 1): the route's health check fails
+    # until the operator-created grafana-service exists, which deadlocks the
+    # initial sync on a fresh cluster if it lands before the instance.
+    argocd.argoproj.io/sync-wave: "2"
 spec:
   hostnames:
     - {{ .Values.grafana.hostname }}
