@@ -1,0 +1,36 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/argoproj.io/application_v1alpha1.json
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cert-manager-config
+  namespace: argocd
+  annotations:
+    # Must sync after cert-manager (wave 2) is Healthy: the ClusterIssuer and
+    # Certificate are validated by cert-manager's admission webhook, and
+    # applying them before it has endpoints wedges the sync (work item #2).
+    argocd.argoproj.io/sync-wave: "3"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: platform
+
+  source:
+    repoURL: {{ .Values.repos.platformApps.repoURL }}
+    targetRevision: {{ .Values.repos.platformApps.targetRevision }}
+    path: charts/cert-manager-config
+    helm:
+      releaseName: cert-manager-config
+      valueFiles:
+        - values.yaml
+        - environments/{{ .Values.environment }}.yaml
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: cert-manager
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - ServerSideApply=true

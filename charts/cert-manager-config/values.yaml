@@ -1,0 +1,7 @@
+clusterIssuer:
+  acmeEmail: benjamin@rottler.io
+  acmeServer: https://acme-v02.api.letsencrypt.org/directory
+certificate:
+  externalDomain: k8s.home.rottlr.de # Overwrite in ./environments/<env>.yaml
+  includeWildcardCertificate: true
+  additionalDnsNames: []

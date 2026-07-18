@@ -1,0 +1,11 @@
+apiVersion: v2
+name: cert-manager-config
+description: >-
+  ClusterIssuer and platform Certificate, deployed as a separate Application
+  (later sync wave) so cert-manager's admission webhook has endpoints before
+  these CRs are applied. Keeping them in the cert-manager app wedged fresh
+  cluster builds without TLS (see idp-argocd-platform-apps work item #2).
+version: 0.1.0
+appVersion: "1.0.0"
+
+# No dependencies - this chart only contains raw manifests

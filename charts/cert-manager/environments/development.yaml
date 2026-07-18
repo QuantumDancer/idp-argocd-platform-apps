@@ -1,6 +1,3 @@
-certificate:
-  externalDomain: dev.idp.rottlr.de
-
 cert-manager:
   replicaCount: 2
   podDisruptionBudget:

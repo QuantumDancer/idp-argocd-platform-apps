@@ -1,0 +1,8 @@
+certificate:
+  externalDomain: k8s.home.rottlr.de
+  additionalDnsNames:
+    # Garage subdomains are 2 levels deep under k8s.home.rottlr.de and not
+    # covered by the *.k8s.home.rottlr.de wildcard (wildcards don't span levels)
+    - "s3.garage.k8s.home.rottlr.de"
+    - "*.s3.garage.k8s.home.rottlr.de"
+    - "*.web.garage.k8s.home.rottlr.de"
