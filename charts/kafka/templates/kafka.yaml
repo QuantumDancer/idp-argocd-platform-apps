@@ -26,8 +26,15 @@ spec:
       offsets.topic.replication.factor: {{ .Values.kafka.replicationFactor }}
       transaction.state.log.replication.factor: {{ .Values.kafka.replicationFactor }}
       transaction.state.log.min.isr: {{ .Values.kafka.minInsyncReplicas }}
-      # Tempo creates its trace topic on first connect with the partition count it
-      # needs, so no KafkaTopic CR / entity operator is required for the write path.
+      # Tempo's trace topic is auto-created by the broker on first connect, so no
+      # KafkaTopic CR / entity operator is required for the write path. The broker
+      # default partition count must match tempo-distributed's
+      # ingest.kafka.auto_create_topic_default_partitions (and thus its
+      # block-builder/live-store replica counts): Tempo's client-side partition
+      # preference does not survive broker auto-creation under Strimzi, which
+      # owns the broker config (observed on first rollout: topic came up with 1
+      # partition, leaving the second consumer of each pair unassigned).
       auto.create.topics.enable: true
+      num.partitions: {{ .Values.kafka.defaultTopicPartitions }}
   # No entityOperator: topics are auto-created and there are no Kafka users to
   # manage. Add topicOperator/userOperator here if declarative topics are wanted.

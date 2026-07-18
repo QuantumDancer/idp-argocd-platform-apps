@@ -20,6 +20,10 @@ kafka:
   replicationFactor: 1
   minInsyncReplicas: 1
 
+  # Broker default for auto-created topics. Keep in sync with tempo-distributed's
+  # ingest.kafka.auto_create_topic_default_partitions.
+  defaultTopicPartitions: 2
+
   resources:
     requests:
       memory: 1Gi
