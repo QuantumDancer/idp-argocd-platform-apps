@@ -16,7 +16,5 @@ garage:
   enabled: true
 backstage:
   enabled: true
-rabbitmqOperator:
-  enabled: true
 tempo:
   enabled: true
