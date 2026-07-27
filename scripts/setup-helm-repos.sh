@@ -15,6 +15,7 @@ helm repo add kyverno https://kyverno.github.io/kyverno/
 helm repo add portefaix https://charts.portefaix.xyz
 helm repo add dex https://charts.dexidp.io
 helm repo add kedacore https://kedacore.github.io/charts
+helm repo add strimzi https://strimzi.io/charts/
 
 # Update repository indices
 helm repo update
