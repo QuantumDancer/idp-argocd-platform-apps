@@ -24,6 +24,20 @@ data:
         disabled: false
         jsonData:
           provider: anthropic
+          # The plugin abstracts models as "base" (cheaper, routine) and "large"
+          # (heavier reasoning); Graft picks between them per chat mode. Both are
+          # pinned because grafana-llm-app 1.0.8 defaults to claude-4-sonnet-20250514,
+          # which Anthropic no longer serves — the health check fails with a 404
+          # until a live model is named here.
+          #
+          # Both map to Opus 5 so neither mode is silently downgraded. Pointing
+          # "base" at claude-sonnet-5 is the obvious cost lever if the trial gets
+          # expensive; that is a deliberate choice, not a default.
+          models:
+            default: base
+            mapping:
+              base: claude-opus-5
+              large: claude-opus-5
         secureJsonData:
           anthropicKey: $__env{ANTHROPIC_API_KEY}
       - type: vikshana-graft-app
