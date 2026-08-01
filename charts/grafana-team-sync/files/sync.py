@@ -7,10 +7,12 @@ the org role and cover alert rules as well as dashboards. What OSS cannot do is 
 the mapping of IdP groups onto Grafana teams at login; that is an Enterprise feature. This
 job is that missing piece, pushed in from outside on a schedule.
 
-Teams are not configured here. They are discovered from GrafanaFolder custom resources
-carrying a team label, which idp-argocd-user-apps renders from its own `teams` list. That
-indirection is deliberate: onboarding a team stays a single-file edit in one repository,
-and this job picks the new team up on its next run with no deployment of its own.
+Teams are not configured here. They are discovered from the GrafanaFolder custom resources
+that the platform already creates for them: one home folder per team from the
+TeamInfraEnvironment Crossplane XR, plus one per system scaffolded by Backstage. All of them
+carry an `idp.rottler.io/team` label naming their owning team, so that label — rather than
+any list maintained here — is the source of truth, and a team gains write access to a new
+folder the moment the platform labels one for it.
 
 Only the Python standard library is used, so the job runs on a stock python image with no
 package installation and no supply chain of its own.
@@ -68,11 +70,16 @@ def request(url, *, method="GET", headers=None, body=None, context=None, allow_4
 
 # --- Discovery: which teams exist, according to the cluster -------------------------------
 
-def discover_teams(team_label, group_annotation):
-    """List GrafanaFolder CRs marked as team-owned.
+def discover_team_folders(team_label):
+    """Map each team name to the Grafana folder UIDs it owns.
 
-    Yields (team_name, gitlab_group, folder_uid) for each. The folder is created and owned
-    by grafana-operator; this job only reads the CR to learn what to reconcile.
+    Every GrafanaFolder the platform creates for a team is labelled with that team's name:
+    the home folder from the TeamInfraEnvironment XR, and one per Backstage-scaffolded
+    system. A team is granted write access to all of them.
+
+    Folders are keyed by UID rather than by CR, because Backstage renders one CR per
+    component of a system while all of them point at the same folder — writing that folder's
+    permissions once per component would be redundant, not merely untidy.
     """
     with open(f"{SERVICEACCOUNT}/token", encoding="utf-8") as handle:
         token = handle.read().strip()
@@ -87,20 +94,22 @@ def discover_teams(team_label, group_annotation):
         url, headers={"Authorization": f"Bearer {token}"}, context=context
     )
 
-    teams = []
+    owned = {}
     for item in payload.get("items", []):
         metadata = item["metadata"]
-        name = metadata["labels"][team_label]
-        group = metadata.get("annotations", {}).get(group_annotation)
         uid = item.get("spec", {}).get("uid")
-        if not group or not uid:
-            log.error(
-                "GrafanaFolder %s/%s is labelled as team-owned but is missing %s or spec.uid; skipping",
-                metadata["namespace"], metadata["name"], group_annotation,
+        # grafana-operator generates a UID when the CR omits one, and that generated value
+        # is not readable from the spec. Such a folder cannot be addressed here, so skip it
+        # loudly rather than guessing.
+        if not uid:
+            log.warning(
+                "GrafanaFolder %s/%s has no spec.uid; skipping",
+                metadata["namespace"], metadata["name"],
             )
             continue
-        teams.append((name, group, uid))
-    return sorted(teams)
+        owned.setdefault(metadata["labels"][team_label], set()).add(uid)
+
+    return {team: sorted(uids) for team, uids in sorted(owned.items())}
 
 
 # --- GitLab: the desired membership -------------------------------------------------------
@@ -221,30 +230,34 @@ def main():
     gitlab_url = os.environ["GITLAB_URL"].rstrip("/")
     gitlab_token = os.environ["GITLAB_TOKEN"]
     team_label = os.environ["TEAM_LABEL"]
-    group_annotation = os.environ["GITLAB_GROUP_ANNOTATION"]
+    # The GitLab group is derived from the team name rather than read off the folder,
+    # matching the same convention the AppProject template already hardcodes. That keeps
+    # this job working against folders the platform creates without needing them annotated.
+    group_pattern = os.environ["GITLAB_GROUP_PATTERN"]
 
     credentials = f"{os.environ['GRAFANA_USER']}:{os.environ['GRAFANA_PASSWORD']}"
     auth = "Basic " + base64.b64encode(credentials.encode()).decode()
 
-    teams = discover_teams(team_label, group_annotation)
+    teams = discover_team_folders(team_label)
     if not teams:
         log.info("no GrafanaFolders labelled %s found; nothing to do", team_label)
         return 0
-    log.info("reconciling %d team(s): %s", len(teams), ", ".join(name for name, _, _ in teams))
+    log.info("reconciling %d team(s): %s", len(teams), ", ".join(teams))
 
     # Every team is attempted even when an earlier one fails, so that a single broken GitLab
     # group cannot stop the rest from converging. Failures are collected and reported at the
     # end so the Job is still marked failed and retried.
     failed = []
-    for name, group, folder_uid in teams:
+    for name, folder_uids in teams.items():
         try:
-            desired = gitlab_members(gitlab_url, gitlab_token, group)
+            desired = gitlab_members(gitlab_url, gitlab_token, group_pattern.format(team=name))
             team_id = ensure_team(grafana_url, auth, name)
             reconcile_members(grafana_url, auth, team_id, name, desired)
-            write_folder_permissions(grafana_url, auth, folder_uid, team_id)
+            for folder_uid in folder_uids:
+                write_folder_permissions(grafana_url, auth, folder_uid, team_id)
             log.info(
-                "team %s: %d GitLab member(s), folder %s writable by team %s",
-                name, len(desired), folder_uid, team_id,
+                "team %s: %d GitLab member(s), %d folder(s) writable by team %s: %s",
+                name, len(desired), len(folder_uids), team_id, ", ".join(folder_uids),
             )
         except (RuntimeError, KeyError, ValueError) as err:
             log.error("team %s failed: %s", name, err)

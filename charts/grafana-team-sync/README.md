@@ -19,31 +19,45 @@ outside on a schedule.
 
 ## How a team gets here
 
-Teams are **not** configured in this chart. They are declared once in
+Teams are **not** configured in this chart, and this chart creates no folders. The platform
+already provisions every folder a team owns, and labels each one with its owning team:
+
+| Folder | Created by | Example UID |
+| --- | --- | --- |
+| Team home folder | `TeamInfraEnvironment` Crossplane XR | `team-a` |
+| Per-system folder | Backstage scaffolder | `team-a-e2e-backstage-test` |
+
+Both carry `idp.rottler.io/team: team-a`. That label is the source of truth, so this job
+simply lists the labelled folders and grants each team `Edit` on all of its own:
+
+```
+GrafanaFolders labelled idp.rottler.io/team
+        │
+        ▼
+this CronJob, every 15 minutes
+        │
+GitLab group idp/<team>  ──>  Grafana team <team>  ──>  Edit on every folder it owns
+```
+
+Onboarding `team-c` is a two-line edit to `teams` in
 [`idp-argocd-user-apps`](https://gitlab.home.rottlr.de/idp/platform/idp-argocd-user-apps)'s
-`values.yaml`, which already renders an ArgoCD `AppProject` per team and now also renders a
-`GrafanaFolder` per team. This job discovers its work by listing those CRs:
+`values.yaml` — the same edit that already creates its `AppProject` and its
+`TeamInfraEnvironment`. Nothing here changes and nothing needs redeploying.
 
-```
-user-apps values.yaml   teams: [team-a, team-b]
-        └─> GrafanaFolder  label idp.rottler.io/team: team-a
-                           annotation idp.rottler.io/gitlab-group: idp/team-a
-                           spec.uid: team-a
-                                    │
-                                    ▼
-                       this CronJob, every 15 minutes
-                       GitLab group members ──> Grafana team ──> folder permissions
-```
+The GitLab group path is derived from the team name via `gitlabGroupPattern`
+(`idp/{team}` by default), mirroring the convention the `AppProject` template already
+hardcodes. That is what lets the job work against folders it does not own without requiring
+them to be annotated.
 
-Onboarding `team-c` is therefore a two-line edit in `user-apps/values.yaml`. Nothing in this
-repository changes, and nothing needs redeploying.
+Folders are deduplicated by `spec.uid`, because Backstage renders one CR per *component* of
+a system while all of a system's components share a single folder.
 
 ## Why folder permissions are not in the GrafanaFolder manifest
 
 `GrafanaFolder.spec.permissions` exists and takes raw JSON, but Grafana's folder permissions
 API identifies a team by a **numeric id** assigned at team creation time. That id has no
-stable representation in git. So `spec.permissions` is deliberately left unset — which also
-means grafana-operator does not manage the ACL and will not fight this job — and the
+stable representation in git. So the folder manifests leave `spec.permissions` unset — which
+also means grafana-operator does not manage the ACL and will not fight this job — and the
 CronJob, which has resolved the id, writes it.
 
 The job writes the folder's permission list with a single `POST`, which **replaces** rather

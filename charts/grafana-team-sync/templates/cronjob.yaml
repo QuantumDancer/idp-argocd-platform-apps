@@ -45,8 +45,8 @@ spec:
                   value: {{ required "gitlab.url must be set" .Values.gitlab.url | quote }}
                 - name: TEAM_LABEL
                   value: {{ .Values.teamLabel | quote }}
-                - name: GITLAB_GROUP_ANNOTATION
-                  value: {{ .Values.gitlabGroupAnnotation | quote }}
+                - name: GITLAB_GROUP_PATTERN
+                  value: {{ .Values.gitlabGroupPattern | quote }}
                 - name: GRAFANA_USER
                   valueFrom:
                     secretKeyRef:

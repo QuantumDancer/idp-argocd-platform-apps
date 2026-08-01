@@ -2,14 +2,18 @@
 # GitLab groups behind them. Exists because Team Sync (mapping IdP groups to Grafana teams
 # at login) is a Grafana Enterprise feature; on OSS the mapping has to be pushed in.
 #
-# The team list is NOT configured here. It is discovered from GrafanaFolder CRs labelled
-# `idp.rottler.io/team`, which idp-argocd-user-apps renders from its own `teams` values.
-# That keeps team onboarding a single-file edit in one repository.
+# The team list is NOT configured here. It is discovered from the GrafanaFolder CRs the
+# platform already creates per team — the home folder from the TeamInfraEnvironment XR and
+# one per Backstage-scaffolded system — all of which carry the team label below. A team
+# therefore gains write access to a new folder as soon as the platform labels one for it,
+# and onboarding a team stays a single edit to `teams` in idp-argocd-user-apps.
 
 # Label whose presence marks a GrafanaFolder as team-owned, and whose value is the team name.
 teamLabel: idp.rottler.io/team
-# Annotation on that same CR holding the full GitLab group path, e.g. "idp/team-a".
-gitlabGroupAnnotation: idp.rottler.io/gitlab-group
+# How the GitLab group path is derived from the team name. Mirrors the convention the
+# AppProject template in idp-argocd-user-apps already hardcodes, which is why the folders
+# themselves need carry nothing beyond the team label.
+gitlabGroupPattern: "idp/{team}"
 
 grafana:
   # In-cluster address of the Grafana service managed by grafana-operator.
