@@ -24,19 +24,22 @@ data:
         disabled: false
         jsonData:
           provider: anthropic
-          # The plugin abstracts models as "base" (cheaper, routine) and "large"
-          # (heavier reasoning); Graft picks between them per chat mode. Both are
-          # pinned because grafana-llm-app 1.0.8 defaults to claude-4-sonnet-20250514,
-          # which Anthropic no longer serves — the health check fails with a 404
-          # until a live model is named here.
+          # The plugin abstracts models as "base" and "large", and Graft maps them
+          # straight onto its two chat modes: "base" backs Standard, "large" backs
+          # Deep Research (see its usePluginSettings hook, which gates each mode on
+          # that slot's health). So this mapping is what decides what each mode costs.
           #
-          # Both map to Opus 5 so neither mode is silently downgraded. Pointing
-          # "base" at claude-sonnet-5 is the obvious cost lever if the trial gets
-          # expensive; that is a deliberate choice, not a default.
+          # Both slots must be named explicitly: grafana-llm-app 1.0.8 defaults to
+          # claude-4-sonnet-20250514, which Anthropic no longer serves, so the health
+          # check 404s on an unset slot rather than falling back to anything usable.
+          #
+          # Sonnet 5 for the routine mode, Opus 5 where the reasoning actually matters.
+          # Model IDs are complete as written — appending a date suffix to either is
+          # what produces the 404 above.
           models:
             default: base
             mapping:
-              base: claude-opus-5
+              base: claude-sonnet-5
               large: claude-opus-5
         secureJsonData:
           anthropicKey: $__env{ANTHROPIC_API_KEY}
