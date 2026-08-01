@@ -1,0 +1,5 @@
+apiVersion: v2
+name: grafana-team-sync
+description: Reconciles Grafana teams and folder permissions from GitLab group membership
+version: 0.1.0
+appVersion: "1.0.0"

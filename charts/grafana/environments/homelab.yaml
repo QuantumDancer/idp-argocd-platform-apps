@@ -9,10 +9,12 @@ grafana:
       tokenUrl: https://gitlab.home.rottlr.de/oauth/token
       apiUrl: https://gitlab.home.rottlr.de/api/v4
       scopes: "openid email profile"
-      # Only members of these GitLab groups may sign in; groups[*] are full group paths.
-      allowedGroups: "idp/platform, idp/team-a"
-      # idp/platform -> server admin, idp/team-a -> read-only.
-      roleAttributePath: "contains(groups[*], 'idp/platform') && 'GrafanaAdmin' || contains(groups[*], 'idp/team-a') && 'Viewer'"
+      # No allowedGroups: sign-in is deliberately open to every authenticated GitLab user,
+      # who lands on Viewer and can read all dashboards. Write access is never granted by
+      # org role — it comes solely from per-folder grants to Grafana teams, reconciled from
+      # GitLab group membership by the grafana-team-sync CronJob. Keeping the group list out
+      # of here is what lets a new team be onboarded by editing idp-argocd-user-apps alone.
+      roleAttributePath: "contains(groups[*], 'idp/platform') && 'GrafanaAdmin' || 'Viewer'"
 
 gateway:
   name: external

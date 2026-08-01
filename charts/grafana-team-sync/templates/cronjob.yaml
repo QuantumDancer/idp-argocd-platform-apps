@@ -1,0 +1,74 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "grafana-team-sync.fullname" . }}
+  labels:
+    {{- include "grafana-team-sync.labels" . | nindent 4 }}
+spec:
+  schedule: {{ .Values.cronjob.schedule | quote }}
+  # Reconciliation is idempotent but not concurrency-safe: two runs racing on the same team
+  # would both diff against a stale membership snapshot.
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: {{ .Values.cronjob.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ .Values.cronjob.failedJobsHistoryLimit }}
+  jobTemplate:
+    spec:
+      backoffLimit: {{ .Values.cronjob.backoffLimit }}
+      template:
+        metadata:
+          labels:
+            {{- include "grafana-team-sync.selectorLabels" . | nindent 12 }}
+        spec:
+          serviceAccountName: {{ include "grafana-team-sync.fullname" . }}
+          restartPolicy: OnFailure
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65534
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            - name: sync
+              image: {{ .Values.cronjob.image }}
+              command:
+                - python3
+                - /opt/grafana-team-sync/sync.py
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop:
+                    - ALL
+              env:
+                - name: GRAFANA_URL
+                  value: {{ .Values.grafana.url | quote }}
+                - name: GITLAB_URL
+                  value: {{ required "gitlab.url must be set" .Values.gitlab.url | quote }}
+                - name: TEAM_LABEL
+                  value: {{ .Values.teamLabel | quote }}
+                - name: GITLAB_GROUP_ANNOTATION
+                  value: {{ .Values.gitlabGroupAnnotation | quote }}
+                - name: GRAFANA_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.grafana.credentialsSecret }}
+                      key: admin-user
+                - name: GRAFANA_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.grafana.credentialsSecret }}
+                      key: admin-password
+                - name: GITLAB_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.gitlab.credentialsSecret }}
+                      key: gitlab-token
+              volumeMounts:
+                - name: script
+                  mountPath: /opt/grafana-team-sync
+                  readOnly: true
+              resources:
+                {{- toYaml .Values.cronjob.resources | nindent 16 }}
+          volumes:
+            - name: script
+              configMap:
+                name: {{ include "grafana-team-sync.fullname" . }}

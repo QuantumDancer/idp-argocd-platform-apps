@@ -54,7 +54,12 @@ spec:
       auth_url: {{ .Values.grafana.auth.gitlab.authUrl | quote }}
       token_url: {{ .Values.grafana.auth.gitlab.tokenUrl | quote }}
       api_url: {{ .Values.grafana.auth.gitlab.apiUrl | quote }}
-      allowed_groups: {{ .Values.grafana.auth.gitlab.allowedGroups | quote }}
+      # Optional. Omitted entirely when unset, so that sign-in is gated by
+      # role_attribute_path alone — an environment that grants every authenticated user a
+      # default role must not also send an empty allowed_groups, which denies everyone.
+      {{- with .Values.grafana.auth.gitlab.allowedGroups }}
+      allowed_groups: {{ . | quote }}
+      {{- end }}
       role_attribute_path: {{ .Values.grafana.auth.gitlab.roleAttributePath | quote }}
     {{- else if eq .Values.grafana.auth.provider "generic_oauth" }}
     auth.generic_oauth:

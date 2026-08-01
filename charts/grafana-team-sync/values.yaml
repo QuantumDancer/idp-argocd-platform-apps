@@ -1,0 +1,42 @@
+# Reconciles Grafana teams, their membership, and per-team folder permissions from the
+# GitLab groups behind them. Exists because Team Sync (mapping IdP groups to Grafana teams
+# at login) is a Grafana Enterprise feature; on OSS the mapping has to be pushed in.
+#
+# The team list is NOT configured here. It is discovered from GrafanaFolder CRs labelled
+# `idp.rottler.io/team`, which idp-argocd-user-apps renders from its own `teams` values.
+# That keeps team onboarding a single-file edit in one repository.
+
+# Label whose presence marks a GrafanaFolder as team-owned, and whose value is the team name.
+teamLabel: idp.rottler.io/team
+# Annotation on that same CR holding the full GitLab group path, e.g. "idp/team-a".
+gitlabGroupAnnotation: idp.rottler.io/gitlab-group
+
+grafana:
+  # In-cluster address of the Grafana service managed by grafana-operator.
+  url: http://grafana-service.grafana.svc.cluster.local:3000
+  # Basic-auth credentials. Grafana's admin account is retained for API/CLI access precisely
+  # for service callers like this one (see the SSO section of the repository CLAUDE.md).
+  credentialsSecret: grafana-team-sync-grafana
+  vaultPath: idp/platform/observability/grafana
+
+gitlab:
+  # Base URL of the GitLab instance, without a trailing slash. Set per environment.
+  url: ""
+  credentialsSecret: grafana-team-sync-gitlab
+  vaultPath: idp/platform/observability/grafana-team-sync
+
+cronjob:
+  # Membership only needs to converge, not be instant: a user cannot be added to a Grafana
+  # team until they have signed in at least once anyway, so some lag is inherent.
+  schedule: "*/15 * * * *"
+  # renovate: datasource=docker depName=python
+  image: python:3.13-slim
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  backoffLimit: 2
+  resources:
+    limits:
+      memory: 128Mi
+    requests:
+      cpu: 50m
+      memory: 64Mi

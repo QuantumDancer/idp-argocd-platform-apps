@@ -18,3 +18,5 @@ backstage:
   enabled: true
 tempo:
   enabled: true
+grafanaTeamSync:
+  enabled: true

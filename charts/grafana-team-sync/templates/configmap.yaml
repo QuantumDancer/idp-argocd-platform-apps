@@ -1,0 +1,12 @@
+# The reconciler is kept in files/sync.py rather than inlined here so that it stays a real
+# Python file: syntax-highlighted, importable by a linter, and never at risk of Helm
+# evaluating a brace pair that Python meant literally.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "grafana-team-sync.fullname" . }}
+  labels:
+    {{- include "grafana-team-sync.labels" . | nindent 4 }}
+data:
+  sync.py: |-
+{{ .Files.Get "files/sync.py" | indent 4 }}
