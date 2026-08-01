@@ -34,13 +34,29 @@ spec:
       name: "grafana"
       user: "$__env{GF_DATABASE_USERNAME}"
       password: "$__env{GF_DATABASE_PASSWORD}"
-    {{- if .Values.grafana.auth.provider }}
+    {{- if or .Values.grafana.auth.provider .Values.graft.enabled }}
     auth:
+      {{- if .Values.grafana.auth.provider }}
       # Hide the username/password form so only SSO is offered in the UI. The admin
       # account stays usable via API/CLI basic auth (auth.basic, enabled by default)
       # as a break-glass path and for the grafana-mcp service account.
       disable_login_form: {{ .Values.grafana.auth.disableLoginForm | quote }}
       oauth_auto_login: {{ .Values.grafana.auth.oauthAutoLogin | quote }}
+      {{- end }}
+      {{- if .Values.graft.enabled }}
+      # Lets Grafana mint the service account that grafana-llm-app's plugin.json asks
+      # for in its `iam` block. Graft holds no credentials of its own — it proxies to
+      # the LLM app's MCP server, which then calls the Grafana API — so without this
+      # that call goes out unauthenticated and every tool returns 401, including
+      # list_datasources, which never touches a datasource at all.
+      #
+      # Grafana gates provisioning on `ManagedServiceAccountsEnabled && the
+      # externalServiceAccounts flag`, so this and the feature toggle below only
+      # work as a pair; either one alone leaves the plugin without a token.
+      managed_service_accounts_enabled: "true"
+      {{- end }}
+    {{- end }}
+    {{- if .Values.grafana.auth.provider }}
     {{- if eq .Values.grafana.auth.provider "gitlab" }}
     auth.gitlab:
       enabled: "true"
@@ -78,6 +94,13 @@ spec:
     {{- end }}
     {{- end }}
     {{- if .Values.graft.enabled }}
+    feature_toggles:
+      # Public-preview flag that turns on automatic service account + token setup for
+      # plugins. Required alongside auth.managed_service_accounts_enabled above; this
+      # is what actually gives grafana-llm-app's MCP server a credential to call the
+      # Grafana API with. Grafana's own default toggles are unaffected — they come
+      # from its registry, not from this list.
+      enable: "externalServiceAccounts"
     plugins:
       # Graft has not been through Grafana's signing process, so it loads only because it is
       # named here. Nothing else is exempted.
