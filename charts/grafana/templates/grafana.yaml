@@ -77,6 +77,18 @@ spec:
       role_attribute_path: {{ .Values.grafana.auth.genericOauth.roleAttributePath | quote }}
     {{- end }}
     {{- end }}
+    {{- if .Values.graft.enabled }}
+    plugins:
+      # Graft has not been through Grafana's signing process, so it loads only because it is
+      # named here. Nothing else is exempted.
+      allow_loading_unsigned_plugins: "vikshana-graft-app"
+      # Graft depends on grafana-llm-app. It has to be installed *before* Grafana starts
+      # serving, because app provisioning aborts startup with "plugin not installed" when a
+      # provisioned app is missing and the plain `preinstall` list is installed in the
+      # background. This is additive: Grafana's built-in preinstall list (the drilldown apps)
+      # is merged in by Grafana itself and is unaffected.
+      preinstall_sync: "grafana-llm-app"
+    {{- end }}
     # unified_alerting:
     #   enabled: true
     #   ha_listen_address: "${POD_IP}:9094"
@@ -89,7 +101,78 @@ spec:
     spec:
       replicas: 2
       template:
+        {{- if .Values.graft.enabled }}
+        metadata:
+          annotations:
+            # The operator only hashes the grafana.ini it owns (into CONFIG_HASH), so an edit
+            # to the plugin provisioning would otherwise never reach the running pods.
+            checksum/plugin-provisioning: {{ include (print $.Template.BasePath "/plugin-provisioning.yaml") . | sha256sum }}
+        {{- end }}
         spec:
+          {{- if .Values.graft.enabled }}
+          # Graft cannot be installed by Grafana itself: it is absent from the catalogue, and
+          # the Garage bucket holding our own build serves no anonymous reads, so the URL
+          # installer has no way to authenticate. Stage the files instead. /var/lib/grafana is
+          # an emptyDir, so this repeats on every pod start.
+          initContainers:
+            - name: graft-plugin
+              image: {{ .Values.graft.image | quote }}
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  set -eu
+                  # MC_HOST_<alias> supplies the alias from the environment, which keeps the
+                  # credentials out of an on-disk mc config.
+                  export MC_HOST_garage="http://${ACCESS_KEY_ID}:${SECRET_ACCESS_KEY}@{{ .Values.graft.bucket.endpoint }}"
+                  mc mirror --overwrite \
+                    "garage/{{ .Values.graft.bucket.name }}/vikshana-graft-app/" \
+                    /var/lib/grafana/plugins/vikshana-graft-app/
+                  # S3 objects carry no permission bits, so the backend binary arrives
+                  # non-executable and Grafana fails to spawn the plugin process.
+                  chmod +x /var/lib/grafana/plugins/vikshana-graft-app/gpx_graft*
+              env:
+                - name: ACCESS_KEY_ID
+                  valueFrom:
+                    secretKeyRef:
+                      key: accessKeyId
+                      name: {{ .Values.graft.bucket.name }}-credentials
+                - name: SECRET_ACCESS_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      key: secretAccessKey
+                      name: {{ .Values.graft.bucket.name }}-credentials
+                # mc wants a writable config directory, and the root filesystem is read-only.
+                - name: HOME
+                  value: /tmp
+              # Mirrors the security context the operator gives the Grafana container, so the
+              # staged files end up owned by the uid that later has to execute them.
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                    - ALL
+                privileged: false
+                readOnlyRootFilesystem: true
+                runAsGroup: 10001
+                runAsNonRoot: true
+                runAsUser: 10001
+              resources:
+                limits:
+                  memory: 256Mi
+                requests:
+                  cpu: 50m
+                  memory: 64Mi
+              volumeMounts:
+                - mountPath: /var/lib/grafana
+                  name: grafana-data
+                - mountPath: /tmp
+                  name: grafana-tmp
+          volumes:
+            - name: plugin-provisioning
+              configMap:
+                name: grafana-plugin-provisioning
+          {{- end }}
           containers:
             - name: grafana
               env:
@@ -125,12 +208,29 @@ spec:
                       key: client-secret
                       name: grafana-oauth-credentials
                 {{- end }}
+                {{- if .Values.graft.enabled }}
+                # Read by the plugin provisioning file, not by Grafana itself.
+                - name: ANTHROPIC_API_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      key: anthropic-key
+                      name: grafana-llm-credentials
+                {{- end }}
               resources:
                 limits:
                   memory: 512Mi
                 requests:
                   cpu: 100m
                   memory: 256Mi
+              {{- if .Values.graft.enabled }}
+              volumeMounts:
+                # subPath, so the mount adds a file instead of shadowing the provisioning
+                # directory the image ships.
+                - mountPath: /etc/grafana/provisioning/plugins/apps.yaml
+                  name: plugin-provisioning
+                  subPath: apps.yaml
+                  readOnly: true
+              {{- end }}
   # TODO: Not yet released, wait until next Helm chart version
   # https://grafana.github.io/grafana-operator/docs/examples/grafana/httproute/readme/
   # httpRoute:

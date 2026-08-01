@@ -1,0 +1,31 @@
+{{- if .Values.graft.enabled }}
+# Grafana app-plugin provisioning, mounted at /etc/grafana/provisioning/plugins/apps.yaml.
+# Both plugins are app plugins, which are disabled until something enables them; doing it
+# here keeps a fresh install click-free and gives grafana-llm-app its provider credentials.
+#
+# The key is interpolated when Grafana reads the file — provisioning values run through
+# setting.ExpandVar and os.ExpandEnv, so $__env{} behaves exactly as it does in grafana.ini
+# and the secret stays out of Git and out of this ConfigMap.
+#
+# Anything listed here must already be installed when provisioning runs, or Grafana aborts
+# startup with "plugin not installed". That is what [plugins] preinstall_sync in the Grafana
+# CR is for, and why Graft's own files are staged by an init container rather than fetched
+# by Grafana's (asynchronous) plugin installer.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-plugin-provisioning
+data:
+  apps.yaml: |
+    apiVersion: 1
+
+    apps:
+      - type: grafana-llm-app
+        disabled: false
+        jsonData:
+          provider: anthropic
+        secureJsonData:
+          anthropicKey: $__env{ANTHROPIC_API_KEY}
+      - type: vikshana-graft-app
+        disabled: false
+{{- end }}
