@@ -34,7 +34,7 @@ cronjob:
   # team until they have signed in at least once anyway, so some lag is inherent.
   schedule: "*/15 * * * *"
   # renovate: datasource=docker depName=python
-  image: python:3.13-slim
+  image: python:3.14-slim
   successfulJobsHistoryLimit: 3
   failedJobsHistoryLimit: 3
   backoffLimit: 2
