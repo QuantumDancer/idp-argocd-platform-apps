@@ -6,5 +6,5 @@ appVersion: "1.0.0"
 
 dependencies:
   - name: tempo-distributed
-    version: 3.14.1
+    version: 3.14.2
     repository: https://grafana-community.github.io/helm-charts
