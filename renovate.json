@@ -3,6 +3,7 @@
   "extends": ["config:recommended"],
   "baseBranchPatterns": ["development"],
   "assignees": ["benjamin"],
+  "rebaseWhen": "conflicted",
   "customManagers": [
     {
       "customType": "regex",

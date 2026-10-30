@@ -23,3 +23,30 @@ grafana:
 gateway:
   name: external
   namespace: gateway
+
+# Graft (https://github.com/vikshana/vikshana-graft-app) — an AI assistant app plugin.
+# Off by default and evaluated on homelab only; enabling it is a deliberate trust decision:
+# the plugin is unsigned third-party code whose Go backend runs inside the Grafana pod, and
+# chat context (dashboards, metrics, logs) leaves the cluster for Anthropic's API.
+#
+# Currently pinned to the hand-built 0.6.1. Upstream publishes no release artifact for it —
+# their build workflow triggers on `v*` tags while release-please tags `graft-v*` — so the
+# plugin is built from source and mirrored into the Garage bucket below. Bumping the version
+# means rebuilding, re-uploading and restarting the pods; nothing here reads the version.
+graft:
+  enabled: false
+
+  # Init container that pulls the plugin out of Garage on pod start.
+  # renovate: datasource=docker depName=quay.io/minio/mc
+  image: quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z
+
+  bucket:
+    # Also the name of the GarageKey and, with a "-credentials" suffix, of the Secret the
+    # garage-operator writes the access key into.
+    name: grafana-plugins
+    # In-cluster S3 endpoint. Plaintext HTTP on purpose: this never leaves the cluster
+    # network, and the Gateway's 1 MiB Envoy buffer is a poor fit for a ~60 MB transfer.
+    endpoint: garage-s3.garage.svc.cluster.local:3900
+    clusterRef:
+      name: garage
+      namespace: garage

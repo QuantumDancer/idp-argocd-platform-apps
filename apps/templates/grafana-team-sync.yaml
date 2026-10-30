@@ -1,0 +1,48 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/argoproj.io/application_v1alpha1.json
+{{- if .Values.grafanaTeamSync.enabled }}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: grafana-team-sync
+  namespace: argocd
+  annotations:
+    # Same wave as user-apps, which renders the GrafanaFolder CRs this job reads. No
+    # ordering between the two is required: an early run simply finds no folders, logs
+    # that, and exits cleanly.
+    argocd.argoproj.io/sync-wave: "6" # Requires grafana
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: platform
+
+  source:
+    repoURL: {{ .Values.repos.platformApps.repoURL }}
+    targetRevision: {{ .Values.repos.platformApps.targetRevision }}
+    path: charts/grafana-team-sync
+    helm:
+      releaseName: grafana-team-sync
+      valueFiles:
+        - values.yaml
+        - environments/{{ .Values.environment }}.yaml
+      ignoreMissingValueFiles: true
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: grafana
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    # Generous retry budget: on a fresh cluster the first syncs race operator
+    # CRDs and webhooks, and ArgoCD never re-attempts an automated sync of the
+    # same revision once retries are exhausted, so this must outlast bootstrap.
+    retry:
+      limit: 10
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 10m
+    syncOptions:
+      - ServerSideApply=true
+{{- end }}

@@ -32,7 +32,7 @@
             "options": {
                "content": "The SLO (service level objective) and other metrics displayed on this dashboard are for informational purposes only."
             },
-            "pluginVersion": "v11.4.0",
+            "pluginVersion": "v13.0.0",
             "title": "Notice",
             "type": "text"
          },
@@ -56,7 +56,7 @@
             },
             "id": 2,
             "interval": "1m",
-            "pluginVersion": "v11.4.0",
+            "pluginVersion": "v13.0.0",
             "targets": [
                {
                   "datasource": {
@@ -74,7 +74,7 @@
                "type": "datasource",
                "uid": "-- Mixed --"
             },
-            "description": "How much error budget is left looking at our 0.990% availability guarantees?",
+            "description": "How much error budget is left looking at our 99.000% availability guarantee?",
             "fieldConfig": {
                "defaults": {
                   "custom": {
@@ -102,7 +102,7 @@
                   "mode": "single"
                }
             },
-            "pluginVersion": "v11.4.0",
+            "pluginVersion": "v13.0.0",
             "targets": [
                {
                   "datasource": {
@@ -110,10 +110,10 @@
                      "uid": "${datasource}"
                   },
                   "expr": "100 * (apiserver_request:availability30d{verb=\"all\", cluster=\"$cluster\"} - 0.990000)",
-                  "legendFormat": "errorbudget"
+                  "legendFormat": "error budget"
                }
             ],
-            "title": "ErrorBudget (30d) > 99.000%",
+            "title": "Error Budget (30d) > 99.000%",
             "type": "timeseries"
          },
          {
@@ -136,7 +136,7 @@
             },
             "id": 4,
             "interval": "1m",
-            "pluginVersion": "v11.4.0",
+            "pluginVersion": "v13.0.0",
             "targets": [
                {
                   "datasource": {
@@ -234,7 +234,7 @@
                   "mode": "single"
                }
             },
-            "pluginVersion": "v11.4.0",
+            "pluginVersion": "v13.0.0",
             "targets": [
                {
                   "datasource": {
@@ -278,7 +278,7 @@
                   "mode": "single"
                }
             },
-            "pluginVersion": "v11.4.0",
+            "pluginVersion": "v13.0.0",
             "targets": [
                {
                   "datasource": {
@@ -321,7 +321,7 @@
                   "mode": "single"
                }
             },
-            "pluginVersion": "v11.4.0",
+            "pluginVersion": "v13.0.0",
             "targets": [
                {
                   "datasource": {
@@ -355,7 +355,7 @@
             },
             "id": 8,
             "interval": "1m",
-            "pluginVersion": "v11.4.0",
+            "pluginVersion": "v13.0.0",
             "targets": [
                {
                   "datasource": {
@@ -453,7 +453,7 @@
                   "mode": "single"
                }
             },
-            "pluginVersion": "v11.4.0",
+            "pluginVersion": "v13.0.0",
             "targets": [
                {
                   "datasource": {
@@ -497,7 +497,7 @@
                   "mode": "single"
                }
             },
-            "pluginVersion": "v11.4.0",
+            "pluginVersion": "v13.0.0",
             "targets": [
                {
                   "datasource": {
@@ -540,7 +540,7 @@
                   "mode": "single"
                }
             },
-            "pluginVersion": "v11.4.0",
+            "pluginVersion": "v13.0.0",
             "targets": [
                {
                   "datasource": {
@@ -583,7 +583,7 @@
                   "mode": "single"
                }
             },
-            "pluginVersion": "v11.4.0",
+            "pluginVersion": "v13.0.0",
             "targets": [
                {
                   "datasource": {
@@ -626,7 +626,7 @@
                   "mode": "single"
                }
             },
-            "pluginVersion": "v11.4.0",
+            "pluginVersion": "v13.0.0",
             "targets": [
                {
                   "datasource": {
@@ -672,7 +672,7 @@
                   "mode": "single"
                }
             },
-            "pluginVersion": "v11.4.0",
+            "pluginVersion": "v13.0.0",
             "targets": [
                {
                   "datasource": {
@@ -714,7 +714,7 @@
                   "mode": "single"
                }
             },
-            "pluginVersion": "v11.4.0",
+            "pluginVersion": "v13.0.0",
             "targets": [
                {
                   "datasource": {
@@ -757,7 +757,7 @@
                   "mode": "single"
                }
             },
-            "pluginVersion": "v11.4.0",
+            "pluginVersion": "v13.0.0",
             "targets": [
                {
                   "datasource": {
@@ -799,7 +799,7 @@
                   "mode": "single"
                }
             },
-            "pluginVersion": "v11.4.0",
+            "pluginVersion": "v13.0.0",
             "targets": [
                {
                   "datasource": {

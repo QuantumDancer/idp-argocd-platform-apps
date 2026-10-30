@@ -7,5 +7,5 @@ appVersion: "1.0.0"
 dependencies:
   # renovate: registryUrl=https://charts.dexidp.io
   - name: dex
-    version: 0.24.1
+    version: 0.26.0
     repository: https://charts.dexidp.io

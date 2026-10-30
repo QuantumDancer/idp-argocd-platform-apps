@@ -60,8 +60,6 @@ loki:
       limits:
         memory: "256Mi"
 
-  minio:
-    enabled: false
 
   # https://serverfault.com/questions/1160162/installation-loki-grafana-limit-resources-used
   chunksCache:
@@ -91,8 +89,6 @@ loki:
   compactor:
     replicas: 0
   indexGateway:
-    replicas: 0
-  bloomCompactor:
     replicas: 0
   bloomGateway:
     replicas: 0

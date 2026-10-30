@@ -21,8 +21,10 @@ garageCluster:
       rootDomain: ".s3.garage.k8s.home.rottlr.de"
   referencePolicy:
     # Backstage (ns: backstage) hosts the TechDocs GarageBucket/GarageKey.
+    # Grafana (ns: grafana) hosts the bucket the Graft plugin build is served from.
     allowedNamespaces:
       - backstage
+      - grafana
   metrics:
     enabled: true
 

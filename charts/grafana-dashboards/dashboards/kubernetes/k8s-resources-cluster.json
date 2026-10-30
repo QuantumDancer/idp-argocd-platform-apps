@@ -37,7 +37,7 @@
             "options": {
                "colorMode": "none"
             },
-            "pluginVersion": "v11.4.0",
+            "pluginVersion": "v13.0.0",
             "targets": [
                {
                   "datasource": {
@@ -72,7 +72,7 @@
             "options": {
                "colorMode": "none"
             },
-            "pluginVersion": "v11.4.0",
+            "pluginVersion": "v13.0.0",
             "targets": [
                {
                   "datasource": {
@@ -107,7 +107,7 @@
             "options": {
                "colorMode": "none"
             },
-            "pluginVersion": "v11.4.0",
+            "pluginVersion": "v13.0.0",
             "targets": [
                {
                   "datasource": {
@@ -142,7 +142,7 @@
             "options": {
                "colorMode": "none"
             },
-            "pluginVersion": "v11.4.0",
+            "pluginVersion": "v13.0.0",
             "targets": [
                {
                   "datasource": {
@@ -177,7 +177,7 @@
             "options": {
                "colorMode": "none"
             },
-            "pluginVersion": "v11.4.0",
+            "pluginVersion": "v13.0.0",
             "targets": [
                {
                   "datasource": {
@@ -212,7 +212,7 @@
             "options": {
                "colorMode": "none"
             },
-            "pluginVersion": "v11.4.0",
+            "pluginVersion": "v13.0.0",
             "targets": [
                {
                   "datasource": {
@@ -262,7 +262,7 @@
                   "mode": "single"
                }
             },
-            "pluginVersion": "v11.4.0",
+            "pluginVersion": "v13.0.0",
             "targets": [
                {
                   "datasource": {
@@ -306,7 +306,7 @@
                            "value": [
                               {
                                  "title": "Drill down to pods",
-                                 "url": "/d/85a562078cdf77779eaa1add43ccec1e/k8s-resources-namespace?${datasource:queryparam}&var-cluster=$cluster&var-namespace=${__data.fields.Namespace}"
+                                 "url": "/d/85a562078cdf77779eaa1add43ccec1e?${datasource:queryparam}&var-cluster=$cluster&var-namespace=${__data.fields.Namespace}"
                               }
                            ]
                         }
@@ -321,7 +321,7 @@
                "y": 12
             },
             "id": 8,
-            "pluginVersion": "v11.4.0",
+            "pluginVersion": "v13.0.0",
             "targets": [
                {
                   "datasource": {
@@ -478,7 +478,7 @@
                   "mode": "single"
                }
             },
-            "pluginVersion": "v11.4.0",
+            "pluginVersion": "v13.0.0",
             "targets": [
                {
                   "datasource": {
@@ -558,7 +558,7 @@
                            "value": [
                               {
                                  "title": "Drill down to pods",
-                                 "url": "/d/85a562078cdf77779eaa1add43ccec1e/k8s-resources-namespace?${datasource:queryparam}&var-cluster=$cluster&var-namespace=${__data.fields.Namespace}"
+                                 "url": "/d/85a562078cdf77779eaa1add43ccec1e?${datasource:queryparam}&var-cluster=$cluster&var-namespace=${__data.fields.Namespace}"
                               }
                            ]
                         }
@@ -573,7 +573,7 @@
                "y": 24
             },
             "id": 10,
-            "pluginVersion": "v11.4.0",
+            "pluginVersion": "v13.0.0",
             "targets": [
                {
                   "datasource": {
@@ -735,7 +735,7 @@
                            "value": [
                               {
                                  "title": "Drill down to pods",
-                                 "url": "/d/85a562078cdf77779eaa1add43ccec1e/k8s-resources-namespace?${datasource:queryparam}&var-cluster=$cluster&var-namespace=${__data.fields.Namespace}"
+                                 "url": "/d/85a562078cdf77779eaa1add43ccec1e?${datasource:queryparam}&var-cluster=$cluster&var-namespace=${__data.fields.Namespace}"
                               }
                            ]
                         }
@@ -750,14 +750,14 @@
                "y": 30
             },
             "id": 11,
-            "pluginVersion": "v11.4.0",
+            "pluginVersion": "v13.0.0",
             "targets": [
                {
                   "datasource": {
                      "type": "prometheus",
                      "uid": "${datasource}"
                   },
-                  "expr": "sum(rate(container_network_receive_bytes_total{job=\"integrations/kubernetes/cadvisor\", cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval])) by (namespace)",
+                  "expr": "sum((8 * rate(container_network_receive_bytes_total{job=\"integrations/kubernetes/cadvisor\", cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval]))) by (namespace)",
                   "format": "table",
                   "instant": true
                },
@@ -766,7 +766,7 @@
                      "type": "prometheus",
                      "uid": "${datasource}"
                   },
-                  "expr": "sum(rate(container_network_transmit_bytes_total{job=\"integrations/kubernetes/cadvisor\", cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval])) by (namespace)",
+                  "expr": "sum((8 * rate(container_network_transmit_bytes_total{job=\"integrations/kubernetes/cadvisor\", cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval]))) by (namespace)",
                   "format": "table",
                   "instant": true
                },
@@ -894,14 +894,14 @@
                   "mode": "single"
                }
             },
-            "pluginVersion": "v11.4.0",
+            "pluginVersion": "v13.0.0",
             "targets": [
                {
                   "datasource": {
                      "type": "prometheus",
                      "uid": "${datasource}"
                   },
-                  "expr": "sum(rate(container_network_receive_bytes_total{job=\"integrations/kubernetes/cadvisor\", cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval])) by (namespace)",
+                  "expr": "sum((8 * rate(container_network_receive_bytes_total{job=\"integrations/kubernetes/cadvisor\", cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval]))) by (namespace)",
                   "legendFormat": "__auto"
                }
             ],
@@ -945,14 +945,14 @@
                   "mode": "single"
                }
             },
-            "pluginVersion": "v11.4.0",
+            "pluginVersion": "v13.0.0",
             "targets": [
                {
                   "datasource": {
                      "type": "prometheus",
                      "uid": "${datasource}"
                   },
-                  "expr": "sum(rate(container_network_transmit_bytes_total{job=\"integrations/kubernetes/cadvisor\", cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval])) by (namespace)",
+                  "expr": "sum((8 * rate(container_network_transmit_bytes_total{job=\"integrations/kubernetes/cadvisor\", cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval]))) by (namespace)",
                   "legendFormat": "__auto"
                }
             ],
@@ -996,14 +996,14 @@
                   "mode": "single"
                }
             },
-            "pluginVersion": "v11.4.0",
+            "pluginVersion": "v13.0.0",
             "targets": [
                {
                   "datasource": {
                      "type": "prometheus",
                      "uid": "${datasource}"
                   },
-                  "expr": "avg(irate(container_network_receive_bytes_total{job=\"integrations/kubernetes/cadvisor\", cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval])) by (namespace)",
+                  "expr": "avg((8 * rate(container_network_receive_bytes_total{job=\"integrations/kubernetes/cadvisor\", cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval]))) by (namespace)",
                   "legendFormat": "__auto"
                }
             ],
@@ -1047,14 +1047,14 @@
                   "mode": "single"
                }
             },
-            "pluginVersion": "v11.4.0",
+            "pluginVersion": "v13.0.0",
             "targets": [
                {
                   "datasource": {
                      "type": "prometheus",
                      "uid": "${datasource}"
                   },
-                  "expr": "avg(irate(container_network_transmit_bytes_total{job=\"integrations/kubernetes/cadvisor\", cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval])) by (namespace)",
+                  "expr": "avg((8 * rate(container_network_transmit_bytes_total{job=\"integrations/kubernetes/cadvisor\", cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval]))) by (namespace)",
                   "legendFormat": "__auto"
                }
             ],
@@ -1098,14 +1098,14 @@
                   "mode": "single"
                }
             },
-            "pluginVersion": "v11.4.0",
+            "pluginVersion": "v13.0.0",
             "targets": [
                {
                   "datasource": {
                      "type": "prometheus",
                      "uid": "${datasource}"
                   },
-                  "expr": "sum(irate(container_network_receive_packets_total{job=\"integrations/kubernetes/cadvisor\", cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval])) by (namespace)",
+                  "expr": "sum(rate(container_network_receive_packets_total{job=\"integrations/kubernetes/cadvisor\", cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval])) by (namespace)",
                   "legendFormat": "__auto"
                }
             ],
@@ -1149,14 +1149,14 @@
                   "mode": "single"
                }
             },
-            "pluginVersion": "v11.4.0",
+            "pluginVersion": "v13.0.0",
             "targets": [
                {
                   "datasource": {
                      "type": "prometheus",
                      "uid": "${datasource}"
                   },
-                  "expr": "sum(irate(container_network_transmit_packets_total{job=\"integrations/kubernetes/cadvisor\", cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval])) by (namespace)",
+                  "expr": "sum(rate(container_network_transmit_packets_total{job=\"integrations/kubernetes/cadvisor\", cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval])) by (namespace)",
                   "legendFormat": "__auto"
                }
             ],
@@ -1200,14 +1200,14 @@
                   "mode": "single"
                }
             },
-            "pluginVersion": "v11.4.0",
+            "pluginVersion": "v13.0.0",
             "targets": [
                {
                   "datasource": {
                      "type": "prometheus",
                      "uid": "${datasource}"
                   },
-                  "expr": "sum(irate(container_network_receive_packets_dropped_total{job=\"integrations/kubernetes/cadvisor\", cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval])) by (namespace)",
+                  "expr": "sum(rate(container_network_receive_packets_dropped_total{job=\"integrations/kubernetes/cadvisor\", cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval])) by (namespace)",
                   "legendFormat": "__auto"
                }
             ],
@@ -1251,14 +1251,14 @@
                   "mode": "single"
                }
             },
-            "pluginVersion": "v11.4.0",
+            "pluginVersion": "v13.0.0",
             "targets": [
                {
                   "datasource": {
                      "type": "prometheus",
                      "uid": "${datasource}"
                   },
-                  "expr": "sum(irate(container_network_transmit_packets_dropped_total{job=\"integrations/kubernetes/cadvisor\", cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval])) by (namespace)",
+                  "expr": "sum(rate(container_network_transmit_packets_dropped_total{job=\"integrations/kubernetes/cadvisor\", cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval])) by (namespace)",
                   "legendFormat": "__auto"
                }
             ],
@@ -1302,7 +1302,7 @@
                   "mode": "single"
                }
             },
-            "pluginVersion": "v11.4.0",
+            "pluginVersion": "v13.0.0",
             "targets": [
                {
                   "datasource": {
@@ -1353,7 +1353,7 @@
                   "mode": "single"
                }
             },
-            "pluginVersion": "v11.4.0",
+            "pluginVersion": "v13.0.0",
             "targets": [
                {
                   "datasource": {
@@ -1409,7 +1409,7 @@
                            "value": [
                               {
                                  "title": "Drill down to pods",
-                                 "url": "/d/85a562078cdf77779eaa1add43ccec1e/k8s-resources-namespace?${datasource:queryparam}&var-cluster=$cluster&var-namespace=${__data.fields.Namespace}"
+                                 "url": "/d/85a562078cdf77779eaa1add43ccec1e?${datasource:queryparam}&var-cluster=$cluster&var-namespace=${__data.fields.Namespace}"
                               }
                            ]
                         }
@@ -1424,7 +1424,7 @@
                "y": 96
             },
             "id": 22,
-            "pluginVersion": "v11.4.0",
+            "pluginVersion": "v13.0.0",
             "targets": [
                {
                   "datasource": {
@@ -1559,10 +1559,10 @@
                   "type": "prometheus",
                   "uid": "${datasource}"
                },
-               "hide": 2,
+               "hide": 0,
                "label": "cluster",
                "name": "cluster",
-               "query": "label_values(up{job=\"integrations/kubernetes/cadvisor\"}, cluster)",
+               "query": "label_values(up{job=\"integrations/kubernetes/kube-state-metrics\"}, cluster)",
                "refresh": 2,
                "sort": 1,
                "type": "query"

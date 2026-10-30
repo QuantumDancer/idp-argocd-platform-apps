@@ -1,0 +1,38 @@
+{{- if .Values.graft.enabled }}
+# Object storage holding the Graft plugin build. Graft is not in the Grafana catalogue and
+# has no upstream release artifact, so the plugin is built by hand and mirrored in here; the
+# Grafana pod's init container pulls it back out on every start (/var/lib/grafana is an
+# emptyDir, so nothing survives a restart).
+#
+# Wave 0, ahead of the Grafana instance at wave 1: the deployment references the credentials
+# Secret the operator derives from the GarageKey, so the key has to exist first.
+apiVersion: garage.rottler.io/v1alpha1
+kind: GarageKey
+metadata:
+  name: {{ .Values.graft.bucket.name }}
+spec:
+  clusterRef:
+    {{- toYaml .Values.graft.bucket.clusterRef | nindent 4 }}
+  # Retain: this key is also what new plugin builds are uploaded with, so an accidental
+  # prune would otherwise strand the bucket contents behind an unrecoverable credential.
+  deletionPolicy: Retain
+---
+apiVersion: garage.rottler.io/v1alpha1
+kind: GarageBucket
+metadata:
+  name: {{ .Values.graft.bucket.name }}
+spec:
+  clusterRef:
+    {{- toYaml .Values.graft.bucket.clusterRef | nindent 4 }}
+  deletionPolicy: Retain
+  globalAliases:
+    - {{ .Values.graft.bucket.name }}
+  grants:
+    # The init container only ever reads; write is for the out-of-band upload that publishes
+    # a new plugin build. Sharing one key between the two is a trial-scoped shortcut — split
+    # it into a read-only key for the pod if Graft graduates past the PoC.
+    - keyRef:
+        name: {{ .Values.graft.bucket.name }}
+      read: true
+      write: true
+{{- end }}

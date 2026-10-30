@@ -40,6 +40,10 @@ backstage:
   enabled: false
 dex:
   enabled: false
+# Syncs Grafana teams and folder permissions from GitLab groups. GitLab-specific, so it
+# stays off in environments that authenticate through Dex/IAM Identity Center instead.
+grafanaTeamSync:
+  enabled: false
 # Tracing: monolithic tempo on homelab, distributed tempo-distributed (+ its
 # Kafka write path via Strimzi) on AWS. Each environment enables exactly one.
 tempo:

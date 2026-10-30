@@ -21,7 +21,7 @@ metadata:
     dashboards: "grafana"
 spec:
   # renovate: datasource=docker depName=grafana/grafana
-  version: 13.1.0
+  version: 13.3.0
   config:
     log:
       mode: "console"
@@ -34,13 +34,29 @@ spec:
       name: "grafana"
       user: "$__env{GF_DATABASE_USERNAME}"
       password: "$__env{GF_DATABASE_PASSWORD}"
-    {{- if .Values.grafana.auth.provider }}
+    {{- if or .Values.grafana.auth.provider .Values.graft.enabled }}
     auth:
+      {{- if .Values.grafana.auth.provider }}
       # Hide the username/password form so only SSO is offered in the UI. The admin
       # account stays usable via API/CLI basic auth (auth.basic, enabled by default)
       # as a break-glass path and for the grafana-mcp service account.
       disable_login_form: {{ .Values.grafana.auth.disableLoginForm | quote }}
       oauth_auto_login: {{ .Values.grafana.auth.oauthAutoLogin | quote }}
+      {{- end }}
+      {{- if .Values.graft.enabled }}
+      # Lets Grafana mint the service account that grafana-llm-app's plugin.json asks
+      # for in its `iam` block. Graft holds no credentials of its own — it proxies to
+      # the LLM app's MCP server, which then calls the Grafana API — so without this
+      # that call goes out unauthenticated and every tool returns 401, including
+      # list_datasources, which never touches a datasource at all.
+      #
+      # Grafana gates provisioning on `ManagedServiceAccountsEnabled && the
+      # externalServiceAccounts flag`, so this and the feature toggle below only
+      # work as a pair; either one alone leaves the plugin without a token.
+      managed_service_accounts_enabled: "true"
+      {{- end }}
+    {{- end }}
+    {{- if .Values.grafana.auth.provider }}
     {{- if eq .Values.grafana.auth.provider "gitlab" }}
     auth.gitlab:
       enabled: "true"
@@ -54,7 +70,12 @@ spec:
       auth_url: {{ .Values.grafana.auth.gitlab.authUrl | quote }}
       token_url: {{ .Values.grafana.auth.gitlab.tokenUrl | quote }}
       api_url: {{ .Values.grafana.auth.gitlab.apiUrl | quote }}
-      allowed_groups: {{ .Values.grafana.auth.gitlab.allowedGroups | quote }}
+      # Optional. Omitted entirely when unset, so that sign-in is gated by
+      # role_attribute_path alone — an environment that grants every authenticated user a
+      # default role must not also send an empty allowed_groups, which denies everyone.
+      {{- with .Values.grafana.auth.gitlab.allowedGroups }}
+      allowed_groups: {{ . | quote }}
+      {{- end }}
       role_attribute_path: {{ .Values.grafana.auth.gitlab.roleAttributePath | quote }}
     {{- else if eq .Values.grafana.auth.provider "generic_oauth" }}
     auth.generic_oauth:
@@ -72,6 +93,25 @@ spec:
       role_attribute_path: {{ .Values.grafana.auth.genericOauth.roleAttributePath | quote }}
     {{- end }}
     {{- end }}
+    {{- if .Values.graft.enabled }}
+    feature_toggles:
+      # Public-preview flag that turns on automatic service account + token setup for
+      # plugins. Required alongside auth.managed_service_accounts_enabled above; this
+      # is what actually gives grafana-llm-app's MCP server a credential to call the
+      # Grafana API with. Grafana's own default toggles are unaffected — they come
+      # from its registry, not from this list.
+      enable: "externalServiceAccounts"
+    plugins:
+      # Graft has not been through Grafana's signing process, so it loads only because it is
+      # named here. Nothing else is exempted.
+      allow_loading_unsigned_plugins: "vikshana-graft-app"
+      # Graft depends on grafana-llm-app. It has to be installed *before* Grafana starts
+      # serving, because app provisioning aborts startup with "plugin not installed" when a
+      # provisioned app is missing and the plain `preinstall` list is installed in the
+      # background. This is additive: Grafana's built-in preinstall list (the drilldown apps)
+      # is merged in by Grafana itself and is unaffected.
+      preinstall_sync: "grafana-llm-app"
+    {{- end }}
     # unified_alerting:
     #   enabled: true
     #   ha_listen_address: "${POD_IP}:9094"
@@ -84,7 +124,78 @@ spec:
     spec:
       replicas: 2
       template:
+        {{- if .Values.graft.enabled }}
+        metadata:
+          annotations:
+            # The operator only hashes the grafana.ini it owns (into CONFIG_HASH), so an edit
+            # to the plugin provisioning would otherwise never reach the running pods.
+            checksum/plugin-provisioning: {{ include (print $.Template.BasePath "/plugin-provisioning.yaml") . | sha256sum }}
+        {{- end }}
         spec:
+          {{- if .Values.graft.enabled }}
+          # Graft cannot be installed by Grafana itself: it is absent from the catalogue, and
+          # the Garage bucket holding our own build serves no anonymous reads, so the URL
+          # installer has no way to authenticate. Stage the files instead. /var/lib/grafana is
+          # an emptyDir, so this repeats on every pod start.
+          initContainers:
+            - name: graft-plugin
+              image: {{ .Values.graft.image | quote }}
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  set -eu
+                  # MC_HOST_<alias> supplies the alias from the environment, which keeps the
+                  # credentials out of an on-disk mc config.
+                  export MC_HOST_garage="http://${ACCESS_KEY_ID}:${SECRET_ACCESS_KEY}@{{ .Values.graft.bucket.endpoint }}"
+                  mc mirror --overwrite \
+                    "garage/{{ .Values.graft.bucket.name }}/vikshana-graft-app/" \
+                    /var/lib/grafana/plugins/vikshana-graft-app/
+                  # S3 objects carry no permission bits, so the backend binary arrives
+                  # non-executable and Grafana fails to spawn the plugin process.
+                  chmod +x /var/lib/grafana/plugins/vikshana-graft-app/gpx_graft*
+              env:
+                - name: ACCESS_KEY_ID
+                  valueFrom:
+                    secretKeyRef:
+                      key: accessKeyId
+                      name: {{ .Values.graft.bucket.name }}-credentials
+                - name: SECRET_ACCESS_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      key: secretAccessKey
+                      name: {{ .Values.graft.bucket.name }}-credentials
+                # mc wants a writable config directory, and the root filesystem is read-only.
+                - name: HOME
+                  value: /tmp
+              # Mirrors the security context the operator gives the Grafana container, so the
+              # staged files end up owned by the uid that later has to execute them.
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                    - ALL
+                privileged: false
+                readOnlyRootFilesystem: true
+                runAsGroup: 10001
+                runAsNonRoot: true
+                runAsUser: 10001
+              resources:
+                limits:
+                  memory: 256Mi
+                requests:
+                  cpu: 50m
+                  memory: 64Mi
+              volumeMounts:
+                - mountPath: /var/lib/grafana
+                  name: grafana-data
+                - mountPath: /tmp
+                  name: grafana-tmp
+          volumes:
+            - name: plugin-provisioning
+              configMap:
+                name: grafana-plugin-provisioning
+          {{- end }}
           containers:
             - name: grafana
               env:
@@ -120,12 +231,29 @@ spec:
                       key: client-secret
                       name: grafana-oauth-credentials
                 {{- end }}
+                {{- if .Values.graft.enabled }}
+                # Read by the plugin provisioning file, not by Grafana itself.
+                - name: ANTHROPIC_API_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      key: anthropic-key
+                      name: grafana-llm-credentials
+                {{- end }}
               resources:
                 limits:
                   memory: 512Mi
                 requests:
                   cpu: 100m
                   memory: 256Mi
+              {{- if .Values.graft.enabled }}
+              volumeMounts:
+                # subPath, so the mount adds a file instead of shadowing the provisioning
+                # directory the image ships.
+                - mountPath: /etc/grafana/provisioning/plugins/apps.yaml
+                  name: plugin-provisioning
+                  subPath: apps.yaml
+                  readOnly: true
+              {{- end }}
   # TODO: Not yet released, wait until next Helm chart version
   # https://grafana.github.io/grafana-operator/docs/examples/grafana/httproute/readme/
   # httpRoute:
