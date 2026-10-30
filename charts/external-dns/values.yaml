@@ -6,6 +6,12 @@ external-dns:
     # Publishes A records for LoadBalancer Services carrying the
     # external-dns.alpha.kubernetes.io/hostname annotation (e.g. garage-s3-lb).
     - service
+  # Chart 1.23.0 dropped the `upsert-only` default and made `policy` a required
+  # value, so the choice has to be stated here. Keep upsert-only: external-dns
+  # then creates and updates records but never deletes them, so a HTTPRoute or
+  # Service disappearing — a bad sync, a namespace torn down — cannot take the
+  # public DNS record with it. Cleanup stays a deliberate manual step.
+  policy: upsert-only
   env:
     - name: CF_API_TOKEN
       valueFrom:
