@@ -1,19 +1,13 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:recommended"
-  ],
-  "baseBranchPatterns": [
-    "development"
-  ],
-  "assignees": [
-    "benjamin"
-  ],
+  "extends": ["config:recommended"],
+  "baseBranchPatterns": ["development"],
+  "assignees": ["benjamin"],
   "rebaseWhen": "conflicted",
   "customManagers": [
     {
       "customType": "regex",
-      "fileMatch": ["charts/grafana/templates/grafana\\.yaml"],
+      "managerFilePatterns": ["/charts/grafana/templates/grafana\\.yaml/"],
       "matchStrings": [
         "# renovate: datasource=(?<datasource>[a-z-]+) depName=(?<depName>[^\\n]+)\\n\\s+version: (?<currentValue>[^\\n]+)"
       ]
@@ -22,13 +16,8 @@
   "packageRules": [
     {
       "description": "Automerge Helm chart patch and minor updates after 3 days and passing CI",
-      "matchManagers": [
-        "helmv3"
-      ],
-      "matchUpdateTypes": [
-        "patch",
-        "minor"
-      ],
+      "matchManagers": ["helmv3"],
+      "matchUpdateTypes": ["patch", "minor"],
       "automerge": true,
       "automergeType": "pr",
       "platformAutomerge": true,
@@ -37,13 +26,9 @@
     },
     {
       "description": "Do not automerge 0.x minor bumps: pre-1.0 minors are potentially breaking (Renovate classifies them as minor by field position, so the rule above would otherwise catch them)",
-      "matchManagers": [
-        "helmv3"
-      ],
+      "matchManagers": ["helmv3"],
       "matchCurrentVersion": "/^0\\./",
-      "matchUpdateTypes": [
-        "minor"
-      ],
+      "matchUpdateTypes": ["minor"],
       "automerge": false
     }
   ]
