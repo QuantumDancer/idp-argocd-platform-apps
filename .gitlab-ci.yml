@@ -2,6 +2,23 @@ stages:
   - test
   - security
 
+# One pipeline per change. Without this, every push to a branch with an open MR starts a
+# branch pipeline *and* an MR pipeline, which on a single runner doubles the queue for no
+# extra signal. MR pipelines are the ones merge checks gate on, so branch pipelines are kept
+# only for the long-lived branches ArgoCD tracks.
+# Deliberately omitted: branches without an MR get no pipeline. Every change here reaches
+# `development` through an MR (Renovate included), so nothing loses coverage.
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "development" || $CI_COMMIT_BRANCH == "main"
+
+variables:
+  # Moves the Secret-Detection template's job from branch pipelines into MR pipelines.
+  # Without it the job only has branch-pipeline rules, and the workflow above would stop
+  # secret detection from ever running on an MR.
+  AST_ENABLE_MR_PIPELINES: "true"
+
 include:
   - template: Jobs/Secret-Detection.gitlab-ci.yml
 
