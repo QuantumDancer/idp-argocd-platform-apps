@@ -1,0 +1,10 @@
+apiVersion: v2
+name: kubelet-csr-approver
+description: Approves kubelet serving certificate CSRs (serverTLSBootstrap) so kubelets serve real TLS
+version: 0.1.0
+appVersion: "1.2.15"
+
+dependencies:
+  - name: kubelet-csr-approver
+    version: 1.2.15
+    repository: https://postfinance.github.io/kubelet-csr-approver

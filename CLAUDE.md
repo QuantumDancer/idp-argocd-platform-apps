@@ -21,8 +21,12 @@ A lower wave syncs and becomes healthy before higher waves start. Apps at the sa
 
 ```
 Wave -1: gateway-api-crds                    (CRDs only, no deps)
+         kubelet-csr-approver                 (homelab only; approves kubelet serving CSRs)
+         cilium, argocd                       (homelab only; installed by Omni, adopted here;
+                                               no finalizer, prune: false)
 Wave  0: external-secrets-operator, kyverno,  (no in-repo CRD deps)
-         loki, longhorn, rabbitmq-operator
+         loki, longhorn, rabbitmq-operator,
+         metrics-server                       (homelab only)
 Wave  1: networking-config, argocd-config,    (depend on wave -1/0 CRDs)
          crossplane, kube-prometheus-stack,
          grafana-operator
@@ -44,8 +48,7 @@ gateway-api-crds ──┬──> networking-config (Gateway)
                    ├──> kube-prometheus-stack (HTTPRoute)
                    └──> grafana (HTTPRoute)
 
-external-secrets-operator ──┬──> networking-config (ExternalSecret, when bgp.enabled)
-                            ├──> cert-manager (ExternalSecret)
+external-secrets-operator ──┬──> cert-manager (ExternalSecret)
                             ├──> external-dns (ExternalSecret)
                             ├──> grafana (ExternalSecret)
                             └──> grafana-database (ExternalSecret)
@@ -122,7 +125,9 @@ kubectl apply --dry-run=server -f <file>
 **HashiCorp Vault**:
 
 - External Secrets Operator configured to use Vault at https://vault.home.rottlr.de:8200
-- Uses Kubernetes auth with role "external-secrets-operator"
+- Uses Kubernetes auth, with the role and mount set per environment in the chart's
+  `environments/<env>.yaml`: role `external-secrets-operator` on the default mount, and on
+  homelab role `external-secrets-operator-homelab-prod` on mount `kubernetes-homelab-prod`
 - Vault path: "secrets" (KV v2 engine)
 
 **Grafana SSO**:

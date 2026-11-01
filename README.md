@@ -12,7 +12,7 @@ For the full project documentation (architecture, design decisions, self-service
 ### Networking & Ingress
 
 - **gateway-api-crds** — Gateway API CRD installation (homelab only)
-- **networking-config** — Cilium BGP, Gateway, and network policies (homelab only)
+- **networking-config** — Cilium LB-IPAM pool and L2 announcements, Gateway, and network policies (homelab only)
 - **cert-manager** — TLS certificate management via Let's Encrypt
 - **external-dns** — Automatic DNS record management
 

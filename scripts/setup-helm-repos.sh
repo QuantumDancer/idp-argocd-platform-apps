@@ -16,6 +16,10 @@ helm repo add portefaix https://charts.portefaix.xyz
 helm repo add dex https://charts.dexidp.io
 helm repo add kedacore https://kedacore.github.io/charts
 helm repo add strimzi https://strimzi.io/charts/
+helm repo add argo https://argoproj.github.io/argo-helm
+helm repo add cilium https://helm.cilium.io/
+helm repo add kubelet-csr-approver https://postfinance.github.io/kubelet-csr-approver
+helm repo add metrics-server https://kubernetes-sigs.github.io/metrics-server/
 
 # Update repository indices
 helm repo update

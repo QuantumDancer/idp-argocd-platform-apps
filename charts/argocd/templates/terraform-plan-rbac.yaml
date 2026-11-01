@@ -1,0 +1,56 @@
+# Read access for the Terraform plan in merge request pipelines (Omni service-account
+# kubeconfig, group `terraform-plan`). `plan` refreshes the two bootstrap Secrets that
+# Terraform owns and reads the cluster CA from `kube-root-ca.crt` for the Vault auth
+# backend. Namespaced Roles with `resourceNames` rather than a ClusterRole: the group
+# gets exactly these three objects and nothing else, and a rename in Terraform shows up
+# as a plan error instead of silently widening access. The chart is homelab-only, which
+# is why this lives here.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: terraform-plan-read-secrets
+  namespace: argocd
+rules:
+  - apiGroups: [""]
+    resources: [secrets]
+    resourceNames: [argocd-oidc-gitlab, git-repo-credentials]
+    verbs: [get]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: terraform-plan-read-secrets
+  namespace: argocd
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: terraform-plan-read-secrets
+subjects:
+  - apiGroup: rbac.authorization.k8s.io
+    kind: Group
+    name: terraform-plan
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: terraform-plan-read-cluster-ca
+  namespace: kube-system
+rules:
+  - apiGroups: [""]
+    resources: [configmaps]
+    resourceNames: [kube-root-ca.crt]
+    verbs: [get]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: terraform-plan-read-cluster-ca
+  namespace: kube-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: terraform-plan-read-cluster-ca
+subjects:
+  - apiGroup: rbac.authorization.k8s.io
+    kind: Group
+    name: terraform-plan

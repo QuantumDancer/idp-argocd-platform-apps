@@ -1,0 +1,4 @@
+kubelet-csr-approver:
+  resources:
+    limits:
+      cpu: null # drop the upstream cpu limit, see values.yaml

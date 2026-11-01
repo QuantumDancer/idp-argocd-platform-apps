@@ -1,0 +1,52 @@
+# Superset of the values Omni installs at bootstrap (`cilium_bootstrap_values` in
+# terraform-talos-cluster/omni_cluster.tf), so the first sync only adds to the release.
+cilium:
+  kubeProxyReplacement: true
+
+  # KubePrism, enabled in Omni's base Talos config.
+  k8sServiceHost: localhost
+  k8sServicePort: 7445
+
+  # More headroom than the default (5 qps) for the Gateway API and LB-IPAM controllers.
+  k8sClientRateLimit:
+    qps: 20
+    burst: 40
+
+  securityContext:
+    capabilities:
+      # Talos' documented set. The pre-Omni install had the typo `FOWNER,,GID`.
+      ciliumAgent: [CHOWN, KILL, NET_ADMIN, NET_RAW, IPC_LOCK, SYS_ADMIN, SYS_RESOURCE, DAC_OVERRIDE, FOWNER, SETGID, SETUID]
+      cleanCiliumState: [NET_ADMIN, SYS_ADMIN, SYS_RESOURCE]
+
+  cgroup:
+    autoMount:
+      enabled: false
+    hostRoot: /sys/fs/cgroup
+
+  gatewayAPI:
+    enabled: true
+    enableAlpn: true
+    enableAppProtocol: true
+
+  # Roll the pods when the ConfigMap changes.
+  rollOutCiliumPods: true
+
+  operator:
+    replicas: 2
+    rollOutPods: true
+
+  # LoadBalancer IPs are announced over L2 (no BGP on the Omni cluster, no bgpControlPlane).
+  # The pool and policy live in charts/networking-config.
+  l2announcements:
+    enabled: true
+
+  hubble:
+    relay:
+      enabled: true
+    ui:
+      enabled: true
+    tls:
+      auto:
+        # cronJob rather than Helm-generated certificates: its Job name is content-hashed,
+        # which keeps ArgoCD from failing on an immutable Job spec.
+        method: cronJob

@@ -1,0 +1,47 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/argoproj.io/application_v1alpha1.json
+{{- if .Values.kubeletCsrApprover.enabled }}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kubelet-csr-approver
+  namespace: argocd
+  annotations:
+    # Earliest wave with the CRDs: it has no in-repo dependencies, and nodes whose kubelet
+    # serving CSR stays pending (serverTLSBootstrap) cannot serve logs/exec or metrics.
+    argocd.argoproj.io/sync-wave: "-1"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: platform
+
+  source:
+    repoURL: {{ .Values.repos.platformApps.repoURL }}
+    targetRevision: {{ .Values.repos.platformApps.targetRevision }}
+    path: charts/kubelet-csr-approver
+    helm:
+      releaseName: kubelet-csr-approver
+      valueFiles:
+        - values.yaml
+        - environments/{{ .Values.environment }}.yaml
+      ignoreMissingValueFiles: true
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: kube-system
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    # Generous retry budget: on a fresh cluster the first syncs race operator
+    # CRDs and webhooks, and ArgoCD never re-attempts an automated sync of the
+    # same revision once retries are exhausted, so this must outlast bootstrap.
+    retry:
+      limit: 10
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 10m
+    syncOptions:
+      - ServerSideApply=true
+{{- end }}

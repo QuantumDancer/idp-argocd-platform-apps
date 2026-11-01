@@ -11,6 +11,14 @@
       "matchStrings": [
         "# renovate: datasource=(?<datasource>[a-z-]+) depName=(?<depName>[^\\n]+)\\n\\s+version: (?<currentValue>[^\\n]+)"
       ]
+    },
+    {
+      "description": "Gateway API CRD release pinned in the gateway-api-crds Application",
+      "customType": "regex",
+      "managerFilePatterns": ["/apps/templates/gateway-api-crds\\.yaml/"],
+      "matchStrings": [
+        "targetRevision: (?<currentValue>v[^\\s]+) # renovate: datasource=(?<datasource>[a-z-]+) depName=(?<depName>[^\\n]+)"
+      ]
     }
   ],
   "packageRules": [
@@ -29,6 +37,24 @@
       "matchManagers": ["helmv3"],
       "matchCurrentVersion": "/^0\\./",
       "matchUpdateTypes": ["minor"],
+      "automerge": false
+    },
+    {
+      "description": "Cilium: one group with the Terraform bootstrap pin in terraform-talos-cluster (same groupName there), so both bumps share a branch name. Not automerged: the bootstrap pin must be bumped in step.",
+      "matchDepNames": ["cilium", "cilium/cilium"],
+      "groupName": "cilium",
+      "automerge": false
+    },
+    {
+      "description": "ArgoCD chart: one group with the Terraform bootstrap pin in terraform-talos-cluster (same groupName there), so both bumps share a branch name. Not automerged: the bootstrap pin must be bumped in step.",
+      "matchDepNames": ["argo-cd"],
+      "groupName": "argo-cd",
+      "automerge": false
+    },
+    {
+      "description": "Gateway API CRDs: one group with the Terraform bootstrap pin in terraform-talos-cluster (same groupName there), so both bumps share a branch name. Not automerged: the bootstrap pin must be bumped in step.",
+      "matchDepNames": ["kubernetes-sigs/gateway-api"],
+      "groupName": "gateway-api",
       "automerge": false
     }
   ]

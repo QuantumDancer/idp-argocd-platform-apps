@@ -1,0 +1,13 @@
+metrics-server:
+  # Deliberately no `--kubelet-insecure-tls`: kubelet serving certificates are real
+  # (serverTLSBootstrap, approved by kubelet-csr-approver), so metrics-server verifies
+  # them against the cluster CA. Do not add it back to paper over unapproved CSRs.
+  args: []
+
+  # Repo convention: memory limit and requests only, no cpu limit.
+  resources:
+    requests:
+      cpu: 100m
+      memory: 200Mi
+    limits:
+      memory: 300Mi

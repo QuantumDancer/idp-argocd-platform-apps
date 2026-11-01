@@ -1,0 +1,12 @@
+apiVersion: v2
+name: argocd
+description: ArgoCD managing itself, taken over from the Omni bootstrap manifest
+version: 0.1.0
+appVersion: "3.0.0"
+
+dependencies:
+  - name: argo-cd
+    # Keep in step with `argocd_chart_version` in terraform-talos-cluster/omni_cluster.tf
+    # (the bootstrap install); Renovate groups both as `argo-cd`.
+    version: 10.1.1
+    repository: https://argoproj.github.io/argo-helm
