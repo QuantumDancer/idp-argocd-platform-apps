@@ -1,0 +1,54 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/argoproj.io/application_v1alpha1.json
+{{- if .Values.argocd.enabled }}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: argocd
+  namespace: argocd
+  annotations:
+    # Omni installs ArgoCD once at cluster creation (a `one-time` manifest rendered in
+    # terraform-talos-cluster), so this app only takes over the running release. Wave -1:
+    # it is already running, and the apps after it need ArgoCD itself.
+    argocd.argoproj.io/sync-wave: "-1"
+  # Deliberately NO `resources-finalizer.argocd.argoproj.io`, unlike every other app here.
+  # The finalizer cascades a deletion of the Application to every object it owns, which is
+  # the right call for an operator on a cluster that can be rebuilt around it. Here it
+  # would delete ArgoCD itself, and with it every app, the moment someone removes this app
+  # or its parent. Without it, deleting the Application only orphans a running release.
+spec:
+  project: platform
+
+  source:
+    repoURL: {{ .Values.repos.platformApps.repoURL }}
+    targetRevision: {{ .Values.repos.platformApps.targetRevision }}
+    path: charts/argocd
+    helm:
+      releaseName: argocd
+      valueFiles:
+        - values.yaml
+        - environments/{{ .Values.environment }}.yaml
+      ignoreMissingValueFiles: true
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+
+  syncPolicy:
+    automated:
+      # `prune: false`: a values or template change that drops a resource must not delete
+      # it from the live release. Removing an ArgoCD resource is a manual decision.
+      prune: false
+      selfHeal: true
+    # Generous retry budget: ArgoCD never re-attempts an automated sync of the same
+    # revision once retries are exhausted, so this must outlast bootstrap.
+    retry:
+      limit: 10
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 10m
+    syncOptions:
+      # The Omni manifest applied these objects with another field manager, and the
+      # ArgoCD CRDs exceed the client-side last-applied annotation limit.
+      - ServerSideApply=true
+{{- end }}

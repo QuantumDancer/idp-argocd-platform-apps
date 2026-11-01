@@ -24,3 +24,7 @@ kubeletCsrApprover:
   enabled: true
 metricsServer:
   enabled: true
+cilium:
+  enabled: true
+argocd:
+  enabled: true

@@ -22,6 +22,8 @@ A lower wave syncs and becomes healthy before higher waves start. Apps at the sa
 ```
 Wave -1: gateway-api-crds                    (CRDs only, no deps)
          kubelet-csr-approver                 (homelab only; approves kubelet serving CSRs)
+         cilium, argocd                       (homelab only; installed by Omni, adopted here;
+                                               no finalizer, prune: false)
 Wave  0: external-secrets-operator, kyverno,  (no in-repo CRD deps)
          loki, longhorn, rabbitmq-operator,
          metrics-server                       (homelab only)

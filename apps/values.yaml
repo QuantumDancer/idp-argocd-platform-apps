@@ -60,3 +60,9 @@ kubeletCsrApprover:
   enabled: false
 metricsServer:
   enabled: false
+# Omni-provisioned clusters (homelab): Omni installs Cilium and ArgoCD once at cluster
+# creation, and these apps take the releases over so Renovate and the repo own them from then on.
+cilium:
+  enabled: false
+argocd:
+  enabled: false
