@@ -1,16 +1,12 @@
-bgp:
-  enabled: true
-  clusterConfiguration:
-    environment: prod
-    name:  talos
-    zone: proxmox-01
-  localASN: 64513
-  peerASN: 64512
-  peerAddress: 192.168.30.1
-
+# LoadBalancer IPs live on the node LAN (192.168.30.0/24), outside the Kea DHCP range, so they are
+# reachable on-link via L2 announcements without any router involvement.
 lbPool:
   enabled: true
-  startIP: 192.168.31.10
-  stopIP: 192.168.31.250
+  startIP: 192.168.30.110
+  stopIP: 192.168.30.119
 
-gatewayExternalIP: 192.168.31.10
+l2Announcements:
+  enabled: true
+
+# Pool allocation: .110 Gateway `external`, .111 garage-s3-lb (charts/garage/environments/homelab.yaml).
+gatewayExternalIP: 192.168.30.110
