@@ -21,14 +21,19 @@ argo-cd:
         namespace: argocd
         additionalLabels:
           release: kube-prometheus-stack
+        # `action: replace` is the CRD default, stated explicitly: relabelings is an atomic list,
+        # so a defaulted field keeps the whole list OutOfSync in ArgoCD.
         relabelings:
           # Set job label for Alloy integration pattern
           - sourceLabels: [__address__]
+            action: replace
             targetLabel: job
             replacement: "integrations/argocd/application-controller"
           - sourceLabels: [__meta_kubernetes_pod_name]
+            action: replace
             targetLabel: pod
           - sourceLabels: [__meta_kubernetes_namespace]
+            action: replace
             targetLabel: namespace
 
   configs:
@@ -239,14 +244,19 @@ argo-cd:
         namespace: argocd
         additionalLabels:
           release: kube-prometheus-stack
+        # `action: replace` is the CRD default, stated explicitly: relabelings is an atomic list,
+        # so a defaulted field keeps the whole list OutOfSync in ArgoCD.
         relabelings:
           # Set job label for Alloy integration pattern
           - sourceLabels: [__address__]
+            action: replace
             targetLabel: job
             replacement: "integrations/argocd/argocd-server"
           - sourceLabels: [__meta_kubernetes_pod_name]
+            action: replace
             targetLabel: pod
           - sourceLabels: [__meta_kubernetes_namespace]
+            action: replace
             targetLabel: namespace
 
   repoServer:
@@ -286,14 +296,19 @@ argo-cd:
         namespace: argocd
         additionalLabels:
           release: kube-prometheus-stack
+        # `action: replace` is the CRD default, stated explicitly: relabelings is an atomic list,
+        # so a defaulted field keeps the whole list OutOfSync in ArgoCD.
         relabelings:
           # Set job label for Alloy integration pattern
           - sourceLabels: [__address__]
+            action: replace
             targetLabel: job
             replacement: "integrations/argocd/repo-server"
           - sourceLabels: [__meta_kubernetes_pod_name]
+            action: replace
             targetLabel: pod
           - sourceLabels: [__meta_kubernetes_namespace]
+            action: replace
             targetLabel: namespace
 
   applicationSet:
