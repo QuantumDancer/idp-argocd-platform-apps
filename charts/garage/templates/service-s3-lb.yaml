@@ -22,7 +22,7 @@ metadata:
   annotations:
     io.cilium/lb-ipam-ips: {{ .Values.service.s3.api.loadBalancer.ip | quote }}
     {{- with .Values.service.s3.api.loadBalancer.hostname }}
-    external-dns.alpha.kubernetes.io/hostname: {{ . | quote }}
+    external-dns.kubernetes.io/hostname: {{ . | quote }}
     {{- end }}
 spec:
   type: LoadBalancer

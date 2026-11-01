@@ -4,7 +4,9 @@ external-dns:
   sources:
     - gateway-httproute
     # Publishes A records for LoadBalancer Services carrying the
-    # external-dns.alpha.kubernetes.io/hostname annotation (e.g. garage-s3-lb).
+    # external-dns.kubernetes.io/hostname annotation (e.g. garage-s3-lb).
+    # Since v0.23 (chart 1.23.0) the legacy `external-dns.alpha.kubernetes.io/`
+    # prefix is ignored unless re-enabled; use the new prefix instead.
     - service
   # Chart 1.23.0 dropped the `upsert-only` default and made `policy` a required
   # value, so the choice has to be stated here. Keep upsert-only: external-dns
