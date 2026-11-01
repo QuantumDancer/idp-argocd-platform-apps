@@ -54,3 +54,9 @@ strimziKafkaOperator:
   enabled: false
 kafka:
   enabled: false
+# Omni-provisioned Talos clusters (homelab): kubelets get serving certificates via
+# serverTLSBootstrap, which need an approver, and metrics-server then verifies them.
+kubeletCsrApprover:
+  enabled: false
+metricsServer:
+  enabled: false

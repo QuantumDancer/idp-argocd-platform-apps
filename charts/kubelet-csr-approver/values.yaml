@@ -1,0 +1,19 @@
+kubelet-csr-approver:
+  # Talos nodes provisioned through Omni have no DNS records (their hostname is the
+  # infra provider's machine-request ID), so the DNS-resolution check cannot pass.
+  # Trust is instead anchored on the node network: only CSRs whose IP SANs fall inside
+  # these prefixes are approved.
+  bypassDnsResolution: true
+  providerIpPrefixes:
+    - 192.168.30.0/24
+
+  # Repo convention: memory limit and requests only, no cpu limit. The upstream cpu
+  # limit (500m) cannot be removed from here: Helm only honours `null` deletions in
+  # user-supplied values, not in a chart's own values.yaml, so it lives in
+  # environments/<env>.yaml.
+  resources:
+    requests:
+      cpu: 100m
+      memory: 64Mi
+    limits:
+      memory: 128Mi

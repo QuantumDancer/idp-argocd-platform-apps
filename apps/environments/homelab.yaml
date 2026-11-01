@@ -20,3 +20,7 @@ tempo:
   enabled: true
 grafanaTeamSync:
   enabled: true
+kubeletCsrApprover:
+  enabled: true
+metricsServer:
+  enabled: true
