@@ -8,5 +8,5 @@ dependencies:
   - name: argo-cd
     # Keep in step with `argocd_chart_version` in terraform-talos-cluster/omni_cluster.tf
     # (the bootstrap install); Renovate groups both as `argo-cd`.
-    version: 10.1.1
+    version: 10.11.6
     repository: https://argoproj.github.io/argo-helm
