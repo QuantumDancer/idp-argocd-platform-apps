@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/cilium.io/ciliuml2announcementpolicy_v2alpha1.json
+{{- if .Values.l2Announcements.enabled }}
+# No nodeSelector and no serviceSelector: every node may answer ARP for every LoadBalancer IP,
+# and Cilium elects one leader node per Service via leases, so failover needs no per-node config.
+apiVersion: cilium.io/v2alpha1
+kind: CiliumL2AnnouncementPolicy
+metadata:
+  name: l2-announcements
+spec:
+  # Announce LoadBalancer IPs only. externalIPs are deliberately off: nothing here uses
+  # spec.externalIPs, and enabling it would make Cilium answer ARP for arbitrary addresses a
+  # Service author puts there.
+  loadBalancerIPs: true
+  externalIPs: false
+  # The nodes have a single NIC (eth0) on the LAN; pinning it keeps announcements off any
+  # interface that might appear later (e.g. a CNI or VPN device).
+  interfaces:
+    - {{ .Values.l2Announcements.interfaces | quote }}
+{{- end }}

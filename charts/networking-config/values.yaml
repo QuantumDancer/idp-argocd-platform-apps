@@ -1,18 +1,15 @@
-# Cilium BGP Configuration
-bgp:
-  enabled: false
-  clusterConfiguration:
-    environment:
-    name:
-    zone:
-  localASN:
-  peerASN:
-  peerAddress:
-
-# Cilium LoadBalancer Configuration
+# Cilium LoadBalancer IP pool (LB-IPAM). Cilium-specific, so off by default: the development
+# (EKS) environment does not run Cilium and must not render these CRs.
 lbPool:
   enabled: false
   startIP:
   stopIP:
+
+# Announce LoadBalancer IPs on the node LAN via ARP (Cilium L2 announcements). Requires
+# `l2announcements.enabled` in the cilium chart. Off by default for the same reason as lbPool.
+l2Announcements:
+  enabled: false
+  # Regex of the NICs the announcements go out on.
+  interfaces: ^eth0$
 
 gatewayExternalIP:
