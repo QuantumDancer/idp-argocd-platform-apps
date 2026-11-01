@@ -19,7 +19,3 @@ grafana:
 gateway:
   name: external
   namespace: gateway
-
-# Graft is being trialled here only. See the values.yaml comment for what enabling it means.
-graft:
-  enabled: true
