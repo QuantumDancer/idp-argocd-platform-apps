@@ -37,6 +37,9 @@ service:
         ip: 192.168.30.111
         hostname: s3-direct.garage.k8s.home.rottlr.de
 
+techdocsPublisher:
+  enabled: true
+
 httproute:
   s3:
     api:

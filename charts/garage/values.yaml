@@ -62,6 +62,17 @@ service:
         # Requires the `service` source enabled in the external-dns chart.
         hostname: ""
 
+# GarageKey for the TechDocs publisher (GitLab CI), imported from a key held in Vault so it
+# is identical across cluster rebuilds. See templates/techdocs-publisher-key.yaml.
+techdocsPublisher:
+  # -- If true, an ExternalSecret + GarageKey `techdocs-publisher` are created.
+  enabled: false
+  # -- Vault KV path (relative to the ClusterSecretStore's mount) of the key, written by
+  # Terraform's vault-secrets module. Properties: accessKeyId, secretAccessKey.
+  vaultKey: idp/platform/garage/techdocs-publisher-key
+  # -- Secret the ExternalSecret materialises for `spec.import`.
+  importSecretName: techdocs-publisher-import
+
 # Gateway API HTTPRoute fronting the S3 API endpoint.
 httproute:
   s3:
