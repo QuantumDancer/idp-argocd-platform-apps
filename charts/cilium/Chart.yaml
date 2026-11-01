@@ -8,5 +8,5 @@ dependencies:
   - name: cilium
     # Keep in step with `cilium_version` in terraform-talos-cluster/omni_cluster.tf (the
     # bootstrap install); Renovate groups both as `cilium`.
-    version: 1.19.5
+    version: 1.20.4
     repository: https://helm.cilium.io/
