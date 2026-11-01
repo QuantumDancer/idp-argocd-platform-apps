@@ -2,7 +2,15 @@ vault:
   server: "https://vault.home.rottlr.de:8200"
   auth:
     kubernetes:
-      mountPath: "kubernetes-talos"
-      role: "external-secrets-operator-talos"
+      # Created by Terraform's vault-config module for the homelab-prod cluster.
+      mountPath: "kubernetes-homelab-prod"
+      role: "external-secrets-operator-homelab-prod"
+      # Vault holds no reviewer JWT, so it sends ESO's own token to the API server for
+      # TokenReview, and the API server only accepts a token that carries its own audience.
+      # On Omni that is the SideroLink issuer (stable per Omni account, also across cluster
+      # recreation). `vault` is the audience the Vault role requires. The auth-delegator
+      # binding for the `external-secrets` SA comes from `createResources` (chart default).
+      # Fallback if login is denied: role without `audience` in Terraform and `audiences: []`.
       audiences:
         - "vault"
+        - "https://[fdae:41e4:649b:9303::1]:10000"
