@@ -125,7 +125,9 @@ kubectl apply --dry-run=server -f <file>
 **HashiCorp Vault**:
 
 - External Secrets Operator configured to use Vault at https://vault.home.rottlr.de:8200
-- Uses Kubernetes auth with role "external-secrets-operator"
+- Uses Kubernetes auth, with the role and mount set per environment in the chart's
+  `environments/<env>.yaml`: role `external-secrets-operator` on the default mount, and on
+  homelab role `external-secrets-operator-homelab-prod` on mount `kubernetes-homelab-prod`
 - Vault path: "secrets" (KV v2 engine)
 
 **Grafana SSO**:
