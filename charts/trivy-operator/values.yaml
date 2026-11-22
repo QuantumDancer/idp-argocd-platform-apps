@@ -19,6 +19,13 @@ trivy-operator:
     infraAssessmentScannerEnabled: false
     clusterComplianceEnabled: false
 
+    # The operator caches every SbomReport in memory, and on startup it lists them
+    # all at once. 121 reports came to ~71 MB of JSON, which OOM-killed the operator
+    # at its 512Mi limit on every restart. Nothing here consumes SBOMs; the only
+    # in-operator user is ClusterVulnerabilityReports, which were never produced.
+    # Vulnerability reports do not depend on this.
+    sbomGenerationEnabled: false
+
     # Exports one `trivy_vulnerability_id` series per CVE per container, which the
     # dashboard's CVE table is built on. Upstream warns about cardinality; for a
     # cluster this size it is tens of thousands of series at most.
@@ -27,6 +34,31 @@ trivy-operator:
   # Scraped by Alloy (k8s-monitoring prometheusOperatorObjects), not Prometheus.
   serviceMonitor:
     enabled: true
+
+  # Pod Security "restricted": the upstream defaults already drop capabilities and
+  # block privilege escalation, but none of the three pod kinds (operator, scan
+  # jobs, Trivy server) set `runAsNonRoot` or a seccomp profile, so the API server
+  # warns on every scan job. Helm deep-merges these maps into the upstream
+  # defaults, so only the missing keys are listed.
+  podSecurityContext:
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+
+  trivyOperator:
+    # Scan jobs run in `image` mode, which pulls layers over the network and needs
+    # no root. Switching `trivy.command` to filesystem/rootfs would need
+    # `runAsUser: 0` here, and that is no longer "restricted"-compliant.
+    scanJobPodTemplatePodSecurityContext:
+      runAsUser: 10000
+      runAsGroup: 10000
+      runAsNonRoot: true
+      seccompProfile:
+        type: RuntimeDefault
+    scanJobPodTemplateContainerSecurityContext:
+      runAsNonRoot: true
+      seccompProfile:
+        type: RuntimeDefault
 
   resources:
     requests:
@@ -51,3 +83,14 @@ trivy-operator:
       resources:
         limits:
           cpu: null
+
+      # Upstream already sets the pod to run as 65534 non-root; add the remaining
+      # "restricted" requirements on the pod and container.
+      podSecurityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - ALL
