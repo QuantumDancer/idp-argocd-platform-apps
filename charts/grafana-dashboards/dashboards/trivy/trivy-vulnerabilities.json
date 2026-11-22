@@ -786,7 +786,7 @@
                 "value": [
                   {
                     "title": "Show this container's CVEs",
-                    "url": "/d/${__dashboard.uid}?${datasource:queryparam}&var-namespace=${__data.fields.Namespace}&var-severity=All&var-fixable=All&var-workload=${__value.raw}"
+                    "url": "/d/${__dashboard.uid}?${datasource:queryparam}&var-namespace=${__data.fields.Namespace}&var-severity=$__all&var-fixable=.*&var-workload=${__value.raw}"
                   }
                 ]
               }
