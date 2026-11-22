@@ -63,6 +63,12 @@ dashboards:
     garage:
       folder: "Resources / Services"
 
+    # Security
+    # Hand-written (no upstream mixin); data from trivy-operator, homelab only.
+    # Elsewhere the dashboard deploys but stays empty.
+    trivy:
+      folder: "Security"
+
 # Rules and alerts configuration
 rules:
   # Enable/disable PrometheusRule deployment
