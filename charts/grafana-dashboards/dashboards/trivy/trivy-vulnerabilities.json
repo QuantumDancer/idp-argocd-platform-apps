@@ -971,7 +971,7 @@
     {
       "type": "table",
       "title": "CVEs (filtered by severity, fixable, workload)",
-      "description": "One row per CVE per container. Click an ID to open it on osv.dev, which resolves both CVE and GHSA IDs.",
+      "description": "One row per CVE and package version, with the number of affected containers. Click an ID to open it on osv.dev, which resolves both CVE and GHSA IDs.",
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource}"
@@ -988,7 +988,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "trivy_vulnerability_id{namespace=~\"$namespace\", severity=~\"$severity\", fixed_version=~\"$fixable\", resource_name=~\"$workload\"}",
+          "expr": "count by (severity, vuln_id, vuln_score, resource, installed_version, fixed_version, vuln_title) (trivy_vulnerability_id{namespace=~\"$namespace\", severity=~\"$severity\", fixed_version=~\"$fixable\", resource_name=~\"$workload\"})",
           "refId": "A",
           "instant": true,
           "range": false,
@@ -1007,11 +1007,7 @@
                 "resource",
                 "installed_version",
                 "fixed_version",
-                "namespace",
-                "resource_name",
-                "container_name",
-                "image_repository",
-                "image_tag",
+                "Value",
                 "vuln_title"
               ]
             }
@@ -1027,12 +1023,8 @@
               "resource": 3,
               "installed_version": 4,
               "fixed_version": 5,
-              "namespace": 6,
-              "resource_name": 7,
-              "container_name": 8,
-              "image_repository": 9,
-              "image_tag": 10,
-              "vuln_title": 11
+              "Value": 6,
+              "vuln_title": 7
             },
             "renameByName": {
               "severity": "Severity",
@@ -1041,11 +1033,7 @@
               "resource": "Package",
               "installed_version": "Installed",
               "fixed_version": "Fixed in",
-              "namespace": "Namespace",
-              "resource_name": "Workload",
-              "container_name": "Container",
-              "image_repository": "Repository",
-              "image_tag": "Tag",
+              "Value": "Containers",
               "vuln_title": "Title"
             }
           }
@@ -1160,6 +1148,18 @@
               {
                 "id": "custom.width",
                 "value": 70
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Containers"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 100
               }
             ]
           },
