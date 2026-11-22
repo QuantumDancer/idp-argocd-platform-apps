@@ -72,6 +72,13 @@ trivy-operator:
     # is enough; a Longhorn PVC would replicate it three times for nothing.
     storageClassEnabled: false
 
+    # Chart 0.38.1 is the newest and still ships Trivy 0.76.1 (1 CRITICAL /
+    # 16 HIGH); the 0.76.2 patch release scans at 0 / 6. The tag is shared by the
+    # server and the scan jobs, so both move together. Drop this pin once a chart
+    # release ships 0.76.2 or later.
+    image:
+      tag: 0.76.2
+
     # Scan job containers. The upstream chart ships CPU limits; null them out
     # (Helm deletes null keys on merge) to keep memory-only limits per repo
     # convention.

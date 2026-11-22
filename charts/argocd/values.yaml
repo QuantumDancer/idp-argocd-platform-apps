@@ -2,6 +2,13 @@ argo-cd:
   redis-ha:
     enabled: true
     haproxy:
+      # argo-cd 10.18.2's bundled redis-ha still ships HAProxy 3.3.10 (1 CRITICAL /
+      # 9 HIGH); the 3.3.18 patch release scans clean. Only the tag is overridden,
+      # so the chart's ECR mirror repository is kept. Drop this pin once an argo-cd
+      # release bundles 3.3.18 or later.
+      image:
+        tag: 3.3.18-alpine
+
       # Recreate one haproxy pod at a time on rollout. The default 25%/25% strategy
       # surges a 4th pod before terminating any old one, but hardAntiAffinity permits
       # only one haproxy per node — with 3 replicas on 3 nodes the surge pod is

@@ -1,6 +1,11 @@
 # https://grafana.com/docs/tempo/latest/setup/helm-chart/
 tempo:
   tempo:
+    # Chart 1.24.4 is the newest and still defaults to its appVersion 2.9.0, which
+    # Trivy scans at 2 CRITICAL / 63 HIGH; the 2.9.5 patch release scans at
+    # 0 / 22. Drop this pin once a chart release ships 2.9.5 or later.
+    tag: "2.9.5"
+
     storage:
       trace:
         backend: local
