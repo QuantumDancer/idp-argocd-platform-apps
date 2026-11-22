@@ -28,3 +28,5 @@ cilium:
   enabled: true
 argocd:
   enabled: true
+trivyOperator:
+  enabled: true

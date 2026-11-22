@@ -1,0 +1,10 @@
+apiVersion: v2
+name: trivy-operator
+description: Trivy Operator scanning cluster workloads for vulnerabilities, with custom configuration
+version: 0.1.0
+appVersion: "0.36.1"
+
+dependencies:
+  - name: trivy-operator
+    version: 0.38.1
+    repository: https://aquasecurity.github.io/helm-charts/

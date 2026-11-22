@@ -1,0 +1,53 @@
+trivy-operator:
+  operator:
+    # The nodes have ~10 GiB each and already run at 60-75% memory, and every scan
+    # job pulls and unpacks a whole image. Two at a time keeps the initial sweep of
+    # all workloads from crowding out real workloads; it just takes longer.
+    scanJobsConcurrentLimit: 2
+
+    # One in-cluster Trivy server holds the vulnerability DB, and scan jobs run as
+    # thin clients against it. In the default Standalone mode every scan job
+    # downloads the full DB itself, which on a first sweep of every image means
+    # dozens of downloads and hits the registry rate limit.
+    builtInTrivyServer: true
+
+    # Infra assessment runs the node-collector with hostPath mounts of kubeadm-style
+    # paths (/etc/kubernetes, /var/lib/etcd, systemd units). Talos has none of
+    # these, so its CIS-style checks report nonsense, and the privileged pod would
+    # need the namespace exempted from Pod Security. The cluster compliance reports
+    # build on those node reports, so they go too.
+    infraAssessmentScannerEnabled: false
+    clusterComplianceEnabled: false
+
+    # Exports one `trivy_vulnerability_id` series per CVE per container, which the
+    # dashboard's CVE table is built on. Upstream warns about cardinality; for a
+    # cluster this size it is tens of thousands of series at most.
+    metricsVulnIdEnabled: true
+
+  # Scraped by Alloy (k8s-monitoring prometheusOperatorObjects), not Prometheus.
+  serviceMonitor:
+    enabled: true
+
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      memory: 512Mi
+
+  trivy:
+    # The server's DB is a cache that Trivy re-downloads on start, so an emptyDir
+    # is enough; a Longhorn PVC would replicate it three times for nothing.
+    storageClassEnabled: false
+
+    # Scan job containers. The upstream chart ships CPU limits; null them out
+    # (Helm deletes null keys on merge) to keep memory-only limits per repo
+    # convention.
+    resources:
+      limits:
+        cpu: null
+
+    server:
+      resources:
+        limits:
+          cpu: null

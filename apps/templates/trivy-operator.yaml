@@ -1,0 +1,48 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/argoproj.io/application_v1alpha1.json
+{{- if .Values.trivyOperator.enabled }}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: trivy-operator
+  namespace: argocd
+  annotations:
+    # After kube-prometheus-stack (wave 1): the chart ships a ServiceMonitor.
+    argocd.argoproj.io/sync-wave: "2"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: platform
+
+  source:
+    repoURL: {{ .Values.repos.platformApps.repoURL }}
+    targetRevision: {{ .Values.repos.platformApps.targetRevision }}
+    path: charts/trivy-operator
+    helm:
+      releaseName: trivy-operator
+      valueFiles:
+        - values.yaml
+        - environments/{{ .Values.environment }}.yaml
+      ignoreMissingValueFiles: true
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: trivy-system
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    # Generous retry budget: on a fresh cluster the first syncs race operator
+    # CRDs and webhooks, and ArgoCD never re-attempts an automated sync of the
+    # same revision once retries are exhausted, so this must outlast bootstrap.
+    retry:
+      limit: 10
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 10m
+    syncOptions:
+      - CreateNamespace=true
+      # The report CRDs exceed the client-side apply annotation size limit.
+      - ServerSideApply=true
+{{- end }}

@@ -66,3 +66,7 @@ cilium:
   enabled: false
 argocd:
   enabled: false
+# Scans workload images for CVEs and exports the findings as metrics
+# (dashboard: grafana-dashboards, component trivy). On trial on homelab only.
+trivyOperator:
+  enabled: false

@@ -32,7 +32,8 @@ Wave  1: networking-config, argocd-config,    (depend on wave -1/0 CRDs)
          grafana-operator
 Wave  2: cert-manager, cloudnative-pg,        (depend on wave 1 CRDs)
          k8s-monitoring, platform-resources,
-         external-dns, tempo
+         external-dns, tempo,
+         trivy-operator                       (homelab only; ServiceMonitor)
 Wave  3: grafana-database,                    (depends on cloudnative-pg)
          rabbitmq-topology-operator           (depends on rabbitmq-operator + cert-manager)
 Wave  4: grafana                              (depends on grafana-operator + grafana-database)
