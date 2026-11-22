@@ -1,3 +1,4 @@
 bootstrap/repo.yaml
 charts/*/charts/*.tgz
 reports/
+tmp/
