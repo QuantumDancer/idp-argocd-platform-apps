@@ -6,7 +6,9 @@ cluster:
   cluster:
     instances: 3
     storage:
-      size: 2Gi
+      # 4Gi, not 2Gi: the database is ~1Gi, and a major-version `pg_upgrade`
+      # may need a second copy of the data directory next to the first.
+      size: 4Gi
     monitoring:
       enabled: true
       podMonitor:
