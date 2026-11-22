@@ -60,12 +60,17 @@ trivy-operator:
       seccompProfile:
         type: RuntimeDefault
 
+  # The operator idles around 320 Mi with ~140 VulnerabilityReports cached, but
+  # peaks past 512 Mi when it lists them all on startup or during a sweep, and was
+  # OOM-killed at 512Mi several times a day. The request covers steady state so the
+  # scheduler accounts for it; the 1Gi limit leaves room for the listing spike and
+  # for the report count to grow with the workload count.
   resources:
     requests:
       cpu: 50m
-      memory: 128Mi
+      memory: 384Mi
     limits:
-      memory: 512Mi
+      memory: 1Gi
 
   trivy:
     # The server's DB is a cache that Trivy re-downloads on start, so an emptyDir
