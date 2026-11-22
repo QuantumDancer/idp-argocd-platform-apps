@@ -1,5 +1,5 @@
 apiVersion: v2
-name: grafana
+name: grafana-database
 description: PostgreSQL DB for Grafana
 version: 0.1.0
 appVersion: "1.0.0"
