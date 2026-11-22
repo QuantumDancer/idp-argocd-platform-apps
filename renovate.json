@@ -19,9 +19,24 @@
       "matchStrings": [
         "targetRevision: (?<currentValue>v[^\\s]+) # renovate: datasource=(?<datasource>[a-z-]+) depName=(?<depName>[^\\n]+)"
       ]
+    },
+    {
+      "description": "CNPG PostgreSQL image pinned by tag and digest in the database charts",
+      "customType": "regex",
+      "managerFilePatterns": ["/charts/[^/]+-database/values\\.yaml/"],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>[a-z-]+) depName=(?<depName>[^\\n]+)\\n\\s+imageName: [^:]+:(?<currentValue>[^@\\s]+)@(?<currentDigest>sha256:[a-f0-9]+)"
+      ]
     }
   ],
   "packageRules": [
+    {
+      "description": "CNPG PostgreSQL tags are <major>.<minor>-<build timestamp>-<flavour>-<distro>. The timestamp marks a rebuild of the same release with newer base packages; flavour and distro must stay fixed. One group so both database charts move together. Never automerged: a major bump makes CNPG run an in-place pg_upgrade that cannot be undone once it succeeds.",
+      "matchDepNames": ["ghcr.io/cloudnative-pg/postgresql"],
+      "versioning": "regex:^(?<major>\\d+)\\.(?<minor>\\d+)-(?<patch>\\d{12})-(?<compatibility>[a-z]+-[a-z]+)$",
+      "groupName": "cnpg-postgresql",
+      "automerge": false
+    },
     {
       "description": "Automerge Helm chart patch and minor updates after 3 days and passing CI",
       "matchManagers": ["helmv3"],
