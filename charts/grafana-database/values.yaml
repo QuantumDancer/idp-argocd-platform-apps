@@ -2,8 +2,18 @@ cluster:
   type: postgresql
   mode: standalone
   version:
-    postgresql: "16"
+    # Must name the same major as `cluster.imageName`: the chart derives the
+    # major from it for the PodMonitor queries and the image catalog.
+    postgresql: "18"
   cluster:
+    # Exact build pinned by tag and digest, not the moving major tag: with
+    # `imagePullPolicy: IfNotPresent` a moving tag left nodes on a stale
+    # Debian 11 build. `minimal` is enough, as the database uses the C locale
+    # and no extensions beyond plpgsql. Changing the major here makes CNPG run
+    # an offline in-place `pg_upgrade`, which cannot be rolled back once it
+    # has succeeded.
+    # renovate: datasource=docker depName=ghcr.io/cloudnative-pg/postgresql
+    imageName: ghcr.io/cloudnative-pg/postgresql:18.7-202611201711-minimal-trixie@sha256:635bfde0a4ce2a04daad754e1ad37fb95ae096c8153b37fe1a4561b5ea417e38
     instances: 3
     storage:
       size: 4Gi
