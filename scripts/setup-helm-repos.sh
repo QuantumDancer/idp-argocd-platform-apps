@@ -20,6 +20,7 @@ helm repo add argo https://argoproj.github.io/argo-helm
 helm repo add cilium https://helm.cilium.io/
 helm repo add kubelet-csr-approver https://postfinance.github.io/kubelet-csr-approver
 helm repo add metrics-server https://kubernetes-sigs.github.io/metrics-server/
+helm repo add aqua https://aquasecurity.github.io/helm-charts/
 
 # Update repository indices
 helm repo update
